@@ -1092,26 +1092,23 @@ Información de BioDent:
           </div>
         )}
 
-        {/* Chat window panel - LIGHT CREAM THEME */}
+        {/* Chat window panel - ORIGINAL Sleek Dark Design */}
         {isChatOpen && (
-          <div className="w-[calc(100vw-2rem)] max-w-[360px] h-[480px] max-h-[75vh] bg-[#FAF7F2] border border-[#C9A961]/60 rounded-2xl shadow-[0_12px_40px_rgba(0,0,0,0.4),0_0_25px_rgba(201,169,97,0.2)] flex flex-col overflow-hidden mb-4 relative z-50 animate-fade-in">
+          <div className="w-[calc(100vw-2rem)] sm:w-[360px] h-[500px] max-h-[80vh] bg-[#0A0A0A] border border-[#C9A961]/40 rounded-2xl shadow-2xl flex flex-col overflow-hidden mb-4 relative z-50">
             
-            {/* Header - Dark gold strip */}
-            <div className="bg-gradient-to-r from-[#1A1814] to-[#2A2520] border-b border-[#C9A961]/40 p-3.5 flex justify-between items-center">
+            {/* Header */}
+            <div className="bg-[#111111] border-b border-[#C9A961]/20 p-4 flex justify-between items-center">
               <div className="flex items-center gap-2.5">
-                <img src={biodentLogoImg} alt="BioDent Mini Logo" className="w-7 h-7 rounded-full border border-brand-gold/40 object-contain bg-white/10" />
+                <img src={biodentLogoImg} alt="BioDent Mini Logo" className="w-7 h-7 rounded-full border border-brand-gold/30 object-contain" />
                 <div>
-                  <h4 className="font-heading text-xs font-bold text-white tracking-widest uppercase">Atención BioDent</h4>
-                  <span className="text-[9px] text-emerald-400 tracking-wider uppercase font-semibold flex items-center gap-1">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                    En línea
-                  </span>
+                  <h4 className="font-heading text-xs font-bold text-brand-white tracking-widest uppercase">Atención BioDent</h4>
+                  <span className="text-[9px] text-brand-gold tracking-wider uppercase font-semibold">● En línea</span>
                 </div>
               </div>
               <div className="flex items-center gap-1.5">
                 <button 
                   onClick={clearChatHistory}
-                  className="text-gray-400 hover:text-red-400 text-xs transition-colors p-1.5 rounded-lg border border-transparent hover:border-red-400/20"
+                  className="text-brand-secondary hover:text-red-400 text-xs transition-colors p-1.5 rounded-lg border border-transparent hover:border-red-400/20"
                   title="Nueva conversación / Limpiar historial"
                 >
                   <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
@@ -1120,7 +1117,7 @@ Información de BioDent:
                 </button>
                 <button 
                   onClick={() => setIsChatOpen(false)}
-                  className="text-gray-400 hover:text-white text-lg transition-colors p-1"
+                  className="text-brand-secondary hover:text-brand-white text-lg transition-colors p-1"
                   aria-label="Cerrar asistente"
                 >
                   &times;
@@ -1128,8 +1125,8 @@ Información de BioDent:
               </div>
             </div>
 
-            {/* Messages Body - LIGHT CREAM */}
-            <div className="flex-grow p-4 overflow-y-auto space-y-3.5 scrollbar-thin scrollbar-thumb-[#C9A961]/30 scrollbar-track-transparent bg-[#FAF7F2]">
+            {/* Messages Body - Original Dark */}
+            <div className="flex-grow p-4 overflow-y-auto space-y-4 scrollbar-thin scrollbar-thumb-brand-gold/25 scrollbar-track-transparent bg-[#0A0A0A]">
               {chatMessages.map((m, idx) => (
                 <div 
                   key={idx} 
@@ -1138,8 +1135,8 @@ Información de BioDent:
                   <div 
                     className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-xs leading-relaxed ${
                       m.role === 'user' 
-                        ? 'bg-gradient-to-r from-[#C9A961] to-[#E8C878] text-[#1A1A1A] font-semibold rounded-tr-none shadow-md' 
-                        : 'bg-white text-[#2A2520] rounded-tl-none border border-[#C9A961]/25 shadow-sm'
+                        ? 'bg-[#C9A961] text-[#0A0A0A] font-semibold rounded-tr-none' 
+                        : 'bg-[#1A1A1A] text-brand-white rounded-tl-none border border-[#C9A961]/20'
                     }`}
                   >
                     {m.image && (
@@ -1152,7 +1149,7 @@ Información de BioDent:
                     {m.content ? (
                       renderMessageContent(m.content, m.role)
                     ) : (m.role === 'assistant' && isChatLoading && idx === chatMessages.length - 1 ? (
-                      <span className="animate-pulse text-[#C9A961] font-medium">Escribiendo...</span>
+                      <span className="animate-pulse text-brand-gold font-medium">Escribiendo...</span>
                     ) : '')}
                   </div>
                 </div>
@@ -1160,8 +1157,8 @@ Información de BioDent:
               <div ref={chatEndRef} />
             </div>
 
-            {/* Input Footer - Light */}
-            <form onSubmit={handleSendMessage} className="p-3 border-t border-[#C9A961]/25 bg-[#F0EDE6] flex flex-col gap-2">
+            {/* Input Footer */}
+            <form onSubmit={handleSendMessage} className="p-3 border-t border-[#C9A961]/20 bg-[#111111] flex flex-col gap-2">
               
               {/* Selected Image Thumbnail Preview */}
               {selectedImage && (
@@ -1193,7 +1190,7 @@ Información de BioDent:
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
                   disabled={isChatLoading}
-                  className={`w-9 h-9 rounded-xl bg-white border ${selectedImage ? 'border-[#C9A961] text-[#C9A961]' : 'border-[#D5CFC4] text-[#8A8577]'} flex items-center justify-center shrink-0 hover:text-[#C9A961] hover:border-[#C9A961] disabled:opacity-50 transition-colors`}
+                  className={`w-9 h-9 rounded-xl bg-[#1A1A1A] border ${selectedImage ? 'border-brand-gold text-brand-gold' : 'border-[#C9A961]/30 text-brand-secondary'} flex items-center justify-center shrink-0 hover:text-brand-gold hover:border-brand-gold disabled:opacity-50 transition-colors`}
                   title="Adjuntar foto de mis dientes"
                 >
                   <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
@@ -1207,12 +1204,12 @@ Información de BioDent:
                   onChange={(e) => setChatInput(e.target.value)}
                   placeholder={selectedImage ? "Pregunta algo sobre la foto..." : "Escribe tu mensaje aquí..."}
                   disabled={isChatLoading}
-                  className="flex-grow bg-white border border-[#D5CFC4] rounded-xl px-3.5 py-2 text-xs text-[#2A2520] placeholder-[#8A8577] focus:outline-none focus:border-[#C9A961] disabled:opacity-50 transition-colors"
+                  className="flex-grow bg-[#1A1A1A] border border-[#C9A961]/30 rounded-xl px-3.5 py-2 text-xs text-brand-white focus:outline-none focus:border-brand-gold disabled:opacity-50 transition-colors"
                 />
                 <button 
                   type="submit"
                   disabled={isChatLoading || (!chatInput.trim() && !selectedImage)}
-                  className="w-9 h-9 rounded-xl bg-gradient-to-r from-[#C9A961] to-[#E8C878] text-[#1A1A1A] flex items-center justify-center shrink-0 hover:shadow-lg disabled:opacity-50 transition-all font-bold shadow-md"
+                  className="w-9 h-9 rounded-xl bg-brand-gold text-[#0A0A0A] flex items-center justify-center shrink-0 hover:bg-brand-glow disabled:opacity-50 transition-colors font-bold"
                   aria-label="Enviar mensaje"
                 >
                   <svg className="w-4 h-4 fill-current transform rotate-45" viewBox="0 0 24 24">
