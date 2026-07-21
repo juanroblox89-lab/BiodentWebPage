@@ -23,7 +23,7 @@ export default async function handler(req, res) {
     return res.status(200).json({
       choices: [{
         message: {
-          content: '⚠️ La variable NVIDIA_API_KEY no se ha encontrado en Vercel. Por favor asegúrate de agregar NVIDIA_API_KEY en Vercel (Settings -> Environment Variables) y pulsar "Redeploy".'
+          content: '⚠️ La variable NVIDIA_API_KEY no está configurada en Vercel. Por favor agrégala en Settings -> Environment Variables y presiona "Redeploy".'
         }
       }]
     });
@@ -31,70 +31,107 @@ export default async function handler(req, res) {
 
   try {
     const body = typeof req.body === 'string' ? JSON.parse(req.body) : (req.body || {});
-    const { messages } = body;
+    const { messages, stream = true } = body;
 
-    // List of models to try in case one is unavailable or deprecating
-    const candidateModels = [
-      'meta/llama-3.3-70b-instruct',
-      'meta/llama-3.1-8b-instruct',
-      'nvidia/llama-3.1-nemotron-70b-instruct'
-    ];
+    // Check if any message contains an image
+    const hasImage = messages && messages.some(m => 
+      Array.isArray(m.content) && m.content.some(c => c.type === 'image_url')
+    );
 
-    let lastError = null;
-    let data = null;
+    // Prioritize Nemotron and Vision models
+    const candidateModels = hasImage 
+      ? ['meta/llama-3.2-11b-vision-instruct', 'meta/llama-3.2-90b-vision-instruct', 'nvidia/neva-22b']
+      : ['nvidia/llama-3.1-nemotron-70b-instruct', 'meta/llama-3.3-70b-instruct', 'meta/llama-3.1-8b-instruct'];
 
-    for (const model of candidateModels) {
-      try {
-        const response = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${apiKey.trim()}`
-          },
-          body: JSON.stringify({
-            model: model,
-            messages: messages || [],
-            temperature: 0.7,
-            max_tokens: 300
-          })
-        });
+    if (stream) {
+      res.setHeader('Content-Type', 'text/event-stream');
+      res.setHeader('Cache-Control', 'no-cache');
+      res.setHeader('Connection', 'keep-alive');
 
-        if (response.ok) {
-          data = await response.json();
-          break; // Successfully got response!
-        } else {
-          const errText = await response.text();
-          console.warn(`Model ${model} failed with status ${response.status}:`, errText);
-          lastError = `Status ${response.status}: ${errText}`;
+      let response = null;
+      let lastErr = '';
+
+      for (const model of candidateModels) {
+        try {
+          response = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${apiKey.trim()}`
+            },
+            body: JSON.stringify({
+              model: model,
+              messages: messages || [],
+              temperature: 0.7,
+              max_tokens: 400,
+              stream: true
+            })
+          });
+
+          if (response.ok) {
+            break;
+          } else {
+            lastErr = await response.text();
+            console.warn(`Model ${model} stream failed (${response.status}):`, lastErr);
+          }
+        } catch (e) {
+          lastErr = e.message;
         }
-      } catch (err) {
-        console.warn(`Fetch error for model ${model}:`, err.message);
-        lastError = err.message;
       }
-    }
 
-    if (data && data.choices && data.choices.length > 0) {
-      return res.status(200).json(data);
-    }
+      if (!response || !response.ok) {
+        const errorMsg = `data: ${JSON.stringify({ choices: [{ delta: { content: `⚠️ Error al conectar con la API de NVIDIA (${lastErr || 'Error de conexión'}).` } }] })}\n\ndata: [DONE]\n\n`;
+        res.write(errorMsg);
+        return res.end();
+      }
 
-    // If all models failed or returned error, return friendly error detailing the issue
-    console.error('All NVIDIA models failed. Last error:', lastError);
-    return res.status(200).json({
-      choices: [{
-        message: {
-          content: `⚠️ No se pudo conectar con la API de NVIDIA (${lastError || 'Error desconocido'}). Revisa que la API key en Vercel sea válida.`
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        const chunk = decoder.decode(value, { stream: true });
+        res.write(chunk);
+      }
+
+      return res.end();
+    } else {
+      // Non-stream response fallback
+      let data = null;
+      for (const model of candidateModels) {
+        try {
+          const resp = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${apiKey.trim()}`
+            },
+            body: JSON.stringify({
+              model: model,
+              messages: messages || [],
+              temperature: 0.7,
+              max_tokens: 400
+            })
+          });
+          if (resp.ok) {
+            data = await resp.json();
+            break;
+          }
+        } catch (err) {
+          console.warn(`Fetch failed for ${model}:`, err.message);
         }
-      }]
-    });
+      }
+      return res.status(200).json(data || { choices: [{ message: { content: 'No se obtuvo respuesta.' } }] });
+    }
 
   } catch (error) {
-    console.error('Serverless Function Catch Error:', error);
-    return res.status(200).json({
-      choices: [{
-        message: {
-          content: `⚠️ Ocurrió un error en el servidor: ${error.message}`
-        }
-      }]
-    });
+    console.error('Serverless Chat Error:', error);
+    if (!res.headersSent) {
+      return res.status(500).json({ error: error.message || 'Internal Server Error' });
+    } else {
+      res.write(`data: ${JSON.stringify({ choices: [{ delta: { content: ` ⚠️ Error: ${error.message}` } }] })}\n\ndata: [DONE]\n\n`);
+      return res.end();
+    }
   }
 }

@@ -11,8 +11,11 @@ function App() {
   // Chatbot State
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [chatInput, setChatInput] = useState('');
+  const [selectedImage, setSelectedImage] = useState(null); // base64 string
+  const fileInputRef = useRef(null);
+
   const [chatMessages, setChatMessages] = useState([
-    { role: 'assistant', content: 'Hola 👋 Soy el asistente de BioDent. ¿En qué puedo ayudarte hoy?' }
+    { role: 'assistant', content: 'Hola 👋 Soy el asistente virtual de BioDent (potenciado por Nemotron 30B). ¿En qué puedo ayudarte hoy? Si deseas, ¡también puedes adjuntarme una foto de tus dientes para darte una orientación inicial!' }
   ]);
   const [isChatLoading, setIsChatLoading] = useState(false);
   const chatEndRef = useRef(null);
@@ -20,11 +23,11 @@ function App() {
   // Chatbot CTAs State & Logic (Rotating every 10s)
   const ctas = [
     "💬 ¿Cuánto cuesta una prótesis flexible?",
+    "📸 ¿Puedo enviar una foto de mis dientes?",
     "😁 Pregúntame por nuestros tratamientos",
-    "📍 Estamos cerca al Parque de Bello",
-    "⏰ Atendemos sábados de 9am a 1pm",
-    "✨ ¿Quieres saber qué prótesis es para ti?",
-    "📲 Te orientamos gratis por WhatsApp"
+    "📍 ¿Dónde están ubicados en Bello?",
+    "⏰ ¿Qué horarios de atención tienen?",
+    "✨ ¿Qué prótesis es la más recomendada?"
   ];
   const [currentCtaIndex, setCurrentCtaIndex] = useState(0);
   const [showCta, setShowCta] = useState(false);
@@ -41,18 +44,15 @@ function App() {
       return;
     }
 
-    // Trigger every 10 seconds
     const interval = setInterval(() => {
       setCurrentCtaIndex((prev) => (prev + 1) % ctas.length);
       setShowCta(true);
 
-      // Auto hide after 6 seconds
       setTimeout(() => {
         setShowCta(false);
       }, 6000);
     }, 10000);
 
-    // Initial trigger 3s after load for smooth entrance
     const initialTimer = setTimeout(() => {
       if (!isChatOpen) {
         setShowCta(true);
@@ -68,59 +68,188 @@ function App() {
     };
   }, [isChatOpen]);
 
-  const handleSendMessage = async (e) => {
-    e.preventDefault();
-    if (!chatInput.trim() || isChatLoading) return;
+  const handleImageSelect = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
 
-    const userMessage = { role: 'user', content: chatInput };
-    setChatMessages((prev) => [...prev, userMessage]);
+    if (file.size > 5 * 1024 * 1024) {
+      alert('La foto es muy pesada. Por favor elige una imagen menor a 5MB.');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setSelectedImage(reader.result);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const removeSelectedImage = () => {
+    setSelectedImage(null);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  const processChatMessage = async (textToSend, imageToSend = null) => {
+    const textContent = (textToSend || '').trim();
+    if (!textContent && !imageToSend) return;
+
+    const userMsgObj = { 
+      role: 'user', 
+      content: textContent, 
+      image: imageToSend 
+    };
+
+    const updatedHistory = [...chatMessages, userMsgObj];
+    setChatMessages(updatedHistory);
     setChatInput('');
+    setSelectedImage(null);
+    if (fileInputRef.current) fileInputRef.current.value = '';
     setIsChatLoading(true);
 
+    // Append initial empty assistant message for SSE streaming
+    setChatMessages((prev) => [...prev, { role: 'assistant', content: '' }]);
+
     try {
-      const systemPrompt = `Eres el asistente virtual de BioDent, clínica odontológica especializada en prótesis dentales ubicada cerca al Parque Principal de Bello, Antioquia. Tu función es responder preguntas sobre los servicios, precios orientativos y tratamientos, y guiar al usuario a agendar una cita por WhatsApp.
+      const systemPrompt = `Eres el asistente virtual con IA de BioDent, clínica odontológica especializada en prótesis dentales ubicada cerca al Parque Principal de Bello, Antioquia. 
+Tu función es responder preguntas sobre los tratamientos, precios orientativos y analizar amablemente fotos dentales si el usuario adjunta una.
 
-Servicios disponibles:
-- Prótesis Flexible: liviana, estética y cómoda. Precio orientativo: consultar directamente.
-- Prótesis Total: restaura función y estética completa.
-- Prótesis Acker: parcial, flexible y discreta.
+Servicios principales:
+- Prótesis Flexible: liviana, estética, sin ganchos metálicos visibles.
+- Prótesis Total: restaura dentadura completa.
+- Prótesis Acker: parcial, cómoda y discreta.
 
-Cuando el usuario pregunte por precios o quiera agendar, invítalo a escribir al WhatsApp: https://wa.me/573114345328
+Instrucciones si el usuario envía una foto de sus dientes:
+1. Brinda una apreciación visual respetuosa, cálida y positiva.
+2. Aclara amablemente que es una opinión técnica preliminar y orientativa.
+3. Recomienda agendar una valoración presencial en la clínica para un diagnóstico profesional definitivo.
 
-Responde siempre en español, de forma cálida, breve y profesional. No inventes precios exactos si no los tienes.`;
+Cuando el usuario pida agendar o cotizar exacto, dale este enlace de WhatsApp: https://wa.me/573114345328
 
-      const messagesToSend = [
-        { role: 'system', content: systemPrompt },
-        ...chatMessages.map(m => ({ role: m.role, content: m.content })),
-        userMessage
-      ];
+Responde siempre en español, de forma cálida, fluida, concisa y profesional.`;
+
+      const messagesToSend = [{ role: 'system', content: systemPrompt }];
+
+      for (const m of chatMessages) {
+        if (m.role === 'assistant') {
+          if (m.content) messagesToSend.push({ role: 'assistant', content: m.content });
+        } else {
+          if (m.image) {
+            messagesToSend.push({
+              role: 'user',
+              content: [
+                { type: 'text', text: m.content || 'Adjunto foto dental' },
+                { type: 'image_url', image_url: { url: m.image } }
+              ]
+            });
+          } else {
+            messagesToSend.push({ role: 'user', content: m.content });
+          }
+        }
+      }
+
+      if (imageToSend) {
+        messagesToSend.push({
+          role: 'user',
+          content: [
+            { type: 'text', text: textContent || 'Adjunto foto de mis dientes para orientación' },
+            { type: 'image_url', image_url: { url: imageToSend } }
+          ]
+        });
+      } else {
+        messagesToSend.push({ role: 'user', content: textContent });
+      }
 
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: messagesToSend })
+        body: JSON.stringify({ messages: messagesToSend, stream: true })
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        console.error('Chat API error:', response.status, errorData);
-        throw new Error(errorData.error || `API error ${response.status}`);
+        throw new Error(`Servidor API error status: ${response.status}`);
       }
 
-      const data = await response.json();
-      const botResponse = data.choices?.[0]?.message?.content 
-        || 'Disculpa, no pude generar una respuesta. Contáctanos por WhatsApp: https://wa.me/573114345328';
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder('utf-8');
+      let accumulatedContent = '';
 
-      setChatMessages((prev) => [...prev, { role: 'assistant', content: botResponse }]);
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        const chunk = decoder.decode(value, { stream: true });
+        const lines = chunk.split('\n');
+
+        for (const line of lines) {
+          const trimmed = line.trim();
+          if (trimmed.startsWith('data: ')) {
+            const dataStr = trimmed.slice(6);
+            if (dataStr === '[DONE]') break;
+
+            try {
+              const parsed = JSON.parse(dataStr);
+              const deltaContent = parsed.choices?.[0]?.delta?.content || parsed.choices?.[0]?.message?.content || '';
+              if (deltaContent) {
+                accumulatedContent += deltaContent;
+                setChatMessages((prev) => {
+                  const updated = [...prev];
+                  const lastIdx = updated.length - 1;
+                  if (lastIdx >= 0 && updated[lastIdx].role === 'assistant') {
+                    updated[lastIdx] = { role: 'assistant', content: accumulatedContent };
+                  }
+                  return updated;
+                });
+              }
+            } catch (e) {
+              // Non-JSON line ignored
+            }
+          }
+        }
+      }
+
+      if (!accumulatedContent) {
+        setChatMessages((prev) => {
+          const updated = [...prev];
+          const lastIdx = updated.length - 1;
+          if (lastIdx >= 0 && updated[lastIdx].role === 'assistant') {
+            updated[lastIdx] = { 
+              role: 'assistant', 
+              content: 'Por favor escrébenos a nuestro WhatsApp para poder orientarte de inmediato: https://wa.me/573114345328' 
+            };
+          }
+          return updated;
+        });
+      }
+
     } catch (error) {
-      console.error(error);
-      setChatMessages((prev) => [
-        ...prev,
-        { role: 'assistant', content: 'Lo siento, no he podido procesar tu solicitud en este momento. Si tienes dudas, puedes contactar directamente a la clínica en: https://wa.me/573114345328' }
-      ]);
+      console.error('Error en el chat:', error);
+      setChatMessages((prev) => {
+        const updated = [...prev];
+        const lastIdx = updated.length - 1;
+        if (lastIdx >= 0 && updated[lastIdx].role === 'assistant') {
+          updated[lastIdx] = {
+            role: 'assistant',
+            content: 'Lo siento, hubo un problema al procesar la respuesta. Puedes escribirnos directamente a nuestro WhatsApp: https://wa.me/573114345328'
+          };
+        }
+        return updated;
+      });
     } finally {
       setIsChatLoading(false);
     }
+  };
+
+  const handleSendMessage = (e) => {
+    e.preventDefault();
+    if (isChatLoading) return;
+    processChatMessage(chatInput, selectedImage);
+  };
+
+  const handleCtaClick = (ctaText) => {
+    setIsChatOpen(true);
+    setShowCta(false);
+    const cleanQuestion = ctaText.replace(/^[^\wáéíóúñÁÉÍÓÚÑ¿?]+/, '').trim();
+    processChatMessage(cleanQuestion, null);
   };
 
   const getWhatsAppLink = (text) => {
@@ -883,10 +1012,10 @@ Responde siempre en español, de forma cálida, breve y profesional. No inventes
       {/* Floating Chatbot Widget */}
       <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end">
         
-        {/* Automatic CTA Tooltip Bubble (Every 10 seconds) */}
+        {/* Automatic CTA Tooltip Bubble (Every 10 seconds) - Clicking sends the question! */}
         {showCta && !isChatOpen && (
           <div 
-            onClick={() => { setIsChatOpen(true); setShowCta(false); }}
+            onClick={() => handleCtaClick(ctas[currentCtaIndex])}
             className="mb-3 bg-[#16140F] border border-[#C9A961]/50 text-white rounded-2xl py-2.5 px-4 shadow-[0_4px_20px_rgba(0,0,0,0.8),0_0_15px_rgba(201,169,97,0.2)] cursor-pointer flex items-center gap-2.5 max-w-[290px] animate-fade-in transition-transform hover:scale-105 group select-none"
           >
             <span className="text-xs font-medium leading-snug text-brand-white group-hover:text-brand-gold transition-colors">
@@ -914,8 +1043,8 @@ Responde siempre en español, de forma cálida, breve y profesional. No inventes
               <div className="flex items-center gap-2.5">
                 <img src={biodentLogoImg} alt="BioDent Mini Logo" className="w-7 h-7 rounded-full border border-brand-gold/30 object-contain" />
                 <div>
-                  <h4 className="font-heading text-xs font-bold text-brand-white tracking-widest uppercase">Asistente BioDent</h4>
-                  <span className="text-[9px] text-brand-gold tracking-wider uppercase font-semibold">En línea</span>
+                  <h4 className="font-heading text-xs font-bold text-brand-white tracking-widest uppercase">Asistente Nemotron 30B</h4>
+                  <span className="text-[9px] text-brand-gold tracking-wider uppercase font-semibold">● En vivo (Streaming)</span>
                 </div>
               </div>
               <button 
@@ -935,46 +1064,88 @@ Responde siempre en español, de forma cálida, breve y profesional. No inventes
                   className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}
                 >
                   <div 
-                    className={`max-w-[80%] rounded-2xl px-4 py-2.5 text-xs leading-relaxed ${
+                    className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-xs leading-relaxed ${
                       m.role === 'user' 
                         ? 'bg-[#C9A961] text-[#0A0A0A] font-semibold rounded-tr-none' 
                         : 'bg-[#1A1A1A] text-brand-white rounded-tl-none border border-[#C9A961]/20'
                     }`}
                   >
-                    {m.content}
+                    {m.image && (
+                      <img 
+                        src={m.image} 
+                        alt="Foto adjunta" 
+                        className="w-44 h-auto max-h-44 object-cover rounded-xl mb-2 border border-brand-gold/40 shadow-md" 
+                      />
+                    )}
+                    {m.content || (m.role === 'assistant' && isChatLoading && idx === chatMessages.length - 1 ? (
+                      <span className="animate-pulse text-brand-gold font-medium">Pensando y escribiendo...</span>
+                    ) : '')}
                   </div>
                 </div>
               ))}
-              {isChatLoading && (
-                <div className="flex justify-start">
-                  <div className="bg-[#1A1A1A] text-brand-secondary rounded-2xl rounded-tl-none px-4 py-2.5 text-[10px] tracking-wider uppercase font-semibold animate-pulse border border-[#C9A961]/20">
-                    Asistente escribiendo...
-                  </div>
-                </div>
-              )}
               <div ref={chatEndRef} />
             </div>
 
-            {/* Input Footer */}
-            <form onSubmit={handleSendMessage} className="p-3 border-t border-[#C9A961]/20 bg-[#111111] flex gap-2 opacity-100">
-              <input 
-                type="text" 
-                value={chatInput}
-                onChange={(e) => setChatInput(e.target.value)}
-                placeholder="Escribe tu mensaje aquí..."
-                disabled={isChatLoading}
-                className="flex-grow bg-[#1A1A1A] border border-[#C9A961]/30 rounded-xl px-3.5 py-2 text-xs text-brand-white focus:outline-none focus:border-brand-gold disabled:opacity-50 transition-colors"
-              />
-              <button 
-                type="submit"
-                disabled={isChatLoading || !chatInput.trim()}
-                className="w-10 h-10 rounded-xl bg-brand-gold text-[#0A0A0A] flex items-center justify-center shrink-0 hover:bg-brand-glow disabled:opacity-50 transition-colors font-bold"
-                aria-label="Enviar mensaje"
-              >
-                <svg className="w-4 h-4 fill-current transform rotate-45" viewBox="0 0 24 24">
-                  <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
-                </svg>
-              </button>
+            {/* Input Footer with Attachment & Streaming */}
+            <form onSubmit={handleSendMessage} className="p-3 border-t border-[#C9A961]/20 bg-[#111111] flex flex-col gap-2 opacity-100">
+              
+              {/* Selected Image Thumbnail Preview */}
+              {selectedImage && (
+                <div className="relative inline-block self-start mb-1">
+                  <img src={selectedImage} alt="Vista previa dental" className="w-14 h-14 object-cover rounded-lg border border-brand-gold/50" />
+                  <button
+                    type="button"
+                    onClick={removeSelectedImage}
+                    className="absolute -top-1.5 -right-1.5 bg-red-600 text-white rounded-full w-4 h-4 flex items-center justify-center text-[10px] font-bold hover:bg-red-700"
+                    title="Quitar foto"
+                  >
+                    &times;
+                  </button>
+                </div>
+              )}
+
+              <div className="flex gap-2 items-center">
+                {/* File input for photos */}
+                <input 
+                  type="file" 
+                  ref={fileInputRef} 
+                  accept="image/*" 
+                  onChange={handleImageSelect} 
+                  className="hidden" 
+                />
+                
+                {/* Attachment Clip Button */}
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={isChatLoading}
+                  className={`w-9 h-9 rounded-xl bg-[#1A1A1A] border ${selectedImage ? 'border-brand-gold text-brand-gold' : 'border-[#C9A961]/30 text-brand-secondary'} flex items-center justify-center shrink-0 hover:text-brand-gold hover:border-brand-gold disabled:opacity-50 transition-colors`}
+                  title="Adjuntar foto de mis dientes"
+                >
+                  <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                    <path d="M16.5 6v11.5c0 2.21-1.79 4-4 4s-4-1.79-4-4V5c0-1.38 1.12-2.5 2.5-2.5s2.5 1.12 2.5 2.5v10.5c0 .55-.45 1-1 1s-1-.45-1-1V6H10v9.5c0 1.38 1.12 2.5 2.5 2.5s2.5-1.12 2.5-2.5V5c0-2.21-1.79-4-4-4S7 2.79 7 5v12.5c0 3.04 2.46 5.5 5.5 5.5s5.5-2.46 5.5-5.5V6h-1.5z" />
+                  </svg>
+                </button>
+
+                <input 
+                  type="text" 
+                  value={chatInput}
+                  onChange={(e) => setChatInput(e.target.value)}
+                  placeholder={selectedImage ? "Pregunta algo sobre la foto..." : "Escribe tu mensaje aquí..."}
+                  disabled={isChatLoading}
+                  className="flex-grow bg-[#1A1A1A] border border-[#C9A961]/30 rounded-xl px-3.5 py-2 text-xs text-brand-white focus:outline-none focus:border-brand-gold disabled:opacity-50 transition-colors"
+                />
+                <button 
+                  type="submit"
+                  disabled={isChatLoading || (!chatInput.trim() && !selectedImage)}
+                  className="w-9 h-9 rounded-xl bg-brand-gold text-[#0A0A0A] flex items-center justify-center shrink-0 hover:bg-brand-glow disabled:opacity-50 transition-colors font-bold"
+                  aria-label="Enviar mensaje"
+                >
+                  <svg className="w-4 h-4 fill-current transform rotate-45" viewBox="0 0 24 24">
+                    <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
+                  </svg>
+                </button>
+              </div>
             </form>
 
           </div>
