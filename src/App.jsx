@@ -95,7 +95,11 @@ Responde siempre en español, de forma cálida, breve y profesional. No inventes
         userMessage
       ];
 
-      const apiKey = import.meta.env.VITE_NVIDIA_API_KEY || import.meta.env.NVIDIA_API_KEY || '';
+      const apiKey = import.meta.env.VITE_NVIDIA_API_KEY || import.meta.env.NVIDIA_API_KEY || (typeof process !== 'undefined' && process.env ? (process.env.VITE_NVIDIA_API_KEY || process.env.NVIDIA_API_KEY) : '') || '';
+
+      if (!apiKey) {
+        console.error('BioDent Chatbot Error: NVIDIA API Key is missing. Ensure VITE_NVIDIA_API_KEY or NVIDIA_API_KEY is configured in Vercel environment variables and trigger a REDEPLOY.');
+      }
 
       const response = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
         method: 'POST',
