@@ -1074,9 +1074,9 @@ Información de BioDent:
         {showCta && !isChatOpen && (
           <div 
             onClick={() => handleCtaClick(ctas[currentCtaIndex])}
-            className="mb-3 bg-[#16140F] border border-[#C9A961]/50 text-white rounded-2xl py-2.5 px-4 shadow-[0_4px_20px_rgba(0,0,0,0.8),0_0_15px_rgba(201,169,97,0.2)] cursor-pointer flex items-center gap-2.5 max-w-[290px] animate-fade-in transition-transform hover:scale-105 group select-none"
+            className="mb-3 bg-[#16140F] border border-[#C9A961] text-white rounded-2xl py-3 px-4 shadow-[0_8px_30px_rgba(201,169,97,0.35),0_0_20px_rgba(0,0,0,0.9)] cursor-pointer flex items-center gap-2.5 max-w-[300px] animate-fade-in transition-all duration-300 hover:scale-105 hover:border-brand-glow group select-none relative z-10"
           >
-            <span className="text-xs font-medium leading-snug text-brand-white group-hover:text-brand-gold transition-colors">
+            <span className="text-xs font-semibold leading-snug text-brand-white group-hover:text-brand-gold transition-colors">
               {ctas[currentCtaIndex]}
             </span>
             <button 
@@ -1094,7 +1094,7 @@ Información de BioDent:
 
         {/* Chat window panel - SOLID #0A0A0A BACKGROUND (NO TRANSPARENCY) */}
         {isChatOpen && (
-          <div className="w-[360px] h-[500px] bg-[#0A0A0A] border border-[#C9A961]/40 rounded-2xl shadow-2xl flex flex-col overflow-hidden mb-4 focus-within:animate-none opacity-100">
+          <div className="w-[360px] h-[500px] bg-[#0A0A0A] border border-[#C9A961]/40 rounded-2xl shadow-2xl flex flex-col overflow-hidden mb-4 focus-within:animate-none opacity-100 relative z-20">
             
             {/* Header */}
             <div className="bg-[#111111] border-b border-[#C9A961]/20 p-4 flex justify-between items-center opacity-100">
@@ -1222,33 +1222,66 @@ Información de BioDent:
           </div>
         )}
 
-        {/* Floating Custom Robot-Tooth Icon Button (56x56px) */}
-        <button 
-          onClick={() => setIsChatOpen(!isChatOpen)}
-          className="w-[56px] h-[56px] rounded-full bg-[#0A0A0A] border border-[#C9A961] flex items-center justify-center shadow-[0_0_16px_rgba(201,169,97,0.4)] hover:shadow-[0_0_24px_rgba(201,169,97,0.75)] hover:scale-105 active:scale-95 transition-all duration-300 group shrink-0"
-          aria-label="Abrir asistente de chat"
-        >
-          {/* Custom SVG: Tooth in gold + Robot face */}
-          <svg className="w-8 h-8 text-[#C9A961] transition-transform group-hover:rotate-6" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-            {/* Tooth Outline */}
-            <path d="M16 4.5C11.5 4.5 8 7 8 11.5C8 15.5 9.5 19.5 11.5 24.5C12.3 26.5 13.5 28 14.5 28C15.3 28 15.6 26.5 16 25C16.4 26.5 16.7 28 17.5 28C18.5 28 19.7 26.5 20.5 24.5C22.5 19.5 24 15.5 24 11.5C24 7 20.5 4.5 16 4.5Z" 
-                  stroke="#C9A961" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" fill="none" />
-            
-            {/* Antenna */}
-            <line x1="16" y1="7" x2="16" y2="9.5" stroke="#C9A961" strokeWidth="1.5" strokeLinecap="round" />
-            <circle cx="16" cy="6.2" r="1.1" fill="#C9A961" />
-            
-            {/* Robot Head Box */}
-            <rect x="11.5" y="9.5" width="9" height="7" rx="1.5" stroke="#C9A961" strokeWidth="1.5" fill="#0A0A0A" />
-            
-            {/* Square Eyes */}
-            <rect x="13.2" y="11.8" width="1.8" height="1.8" fill="#C9A961" rx="0.3" />
-            <rect x="17" y="11.8" width="1.8" height="1.8" fill="#C9A961" rx="0.3" />
-            
-            {/* Robot Mouth */}
-            <path d="M14 15H18" stroke="#C9A961" strokeWidth="1.2" strokeLinecap="round" />
-          </svg>
-        </button>
+        {/* HIGH VISIBILITY Floating Custom Tooth Button */}
+        <div className="relative flex items-center gap-3">
+          
+          {/* Permanent Floating Gold Label when chat is closed and popups are not active */}
+          {!isChatOpen && !showCta && (
+            <button
+              onClick={() => setIsChatOpen(true)}
+              className="bg-[#16140F] border border-[#C9A961] text-brand-gold px-3.5 py-1.5 rounded-full text-xs font-bold tracking-wide shadow-[0_4px_15px_rgba(201,169,97,0.3)] hover:scale-105 transition-all flex items-center gap-1.5 cursor-pointer animate-fade-in"
+            >
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+              <span>¿Dudas con tus dientes?</span>
+            </button>
+          )}
+
+          {/* Button Container with Radar Ripple Effect */}
+          <div className="relative">
+            {/* Outer Glowing Golden Radar Rings */}
+            {!isChatOpen && (
+              <>
+                <div className="absolute inset-0 rounded-full border-2 border-brand-gold opacity-75 animate-radar-ripple pointer-events-none"></div>
+                <div className="absolute inset-0 rounded-full bg-brand-gold/25 blur-md animate-pulse pointer-events-none"></div>
+              </>
+            )}
+
+            {/* Notification Badge */}
+            {!isChatOpen && (
+              <span className="absolute -top-1 -right-1 z-20 w-5 h-5 bg-gradient-to-r from-amber-500 to-yellow-400 text-black text-[10px] font-black rounded-full flex items-center justify-center shadow-lg border border-black animate-bounce">
+                1
+              </span>
+            )}
+
+            <button 
+              onClick={() => setIsChatOpen(!isChatOpen)}
+              className="w-[62px] h-[62px] rounded-full bg-[#0A0A0A] border-2 border-[#C9A961] flex items-center justify-center shadow-[0_0_25px_rgba(201,169,97,0.55)] hover:shadow-[0_0_35px_rgba(201,169,97,0.9)] hover:scale-110 active:scale-95 transition-all duration-300 group shrink-0 relative z-10 cursor-pointer"
+              aria-label="Abrir asistente de chat"
+            >
+              {/* Custom SVG: Tooth in gold + Robot face */}
+              <svg className="w-9 h-9 text-[#C9A961] transition-transform group-hover:rotate-12" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                {/* Tooth Outline */}
+                <path d="M16 4.5C11.5 4.5 8 7 8 11.5C8 15.5 9.5 19.5 11.5 24.5C12.3 26.5 13.5 28 14.5 28C15.3 28 15.6 26.5 16 25C16.4 26.5 16.7 28 17.5 28C18.5 28 19.7 26.5 20.5 24.5C22.5 19.5 24 15.5 24 11.5C24 7 20.5 4.5 16 4.5Z" 
+                      stroke="#C9A961" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+                
+                {/* Antenna */}
+                <line x1="16" y1="7" x2="16" y2="9.5" stroke="#C9A961" strokeWidth="1.5" strokeLinecap="round" />
+                <circle cx="16" cy="6.2" r="1.1" fill="#C9A961" />
+                
+                {/* Robot Head Box */}
+                <rect x="11.5" y="9.5" width="9" height="7" rx="1.5" stroke="#C9A961" strokeWidth="1.5" fill="#0A0A0A" />
+                
+                {/* Square Eyes */}
+                <rect x="13.2" y="11.8" width="1.8" height="1.8" fill="#C9A961" rx="0.3" />
+                <rect x="17" y="11.8" width="1.8" height="1.8" fill="#C9A961" rx="0.3" />
+                
+                {/* Robot Mouth */}
+                <path d="M14 15H18" stroke="#C9A961" strokeWidth="1.2" strokeLinecap="round" />
+              </svg>
+            </button>
+          </div>
+
+        </div>
       </div>
 
     </div>
