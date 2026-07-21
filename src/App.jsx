@@ -28,7 +28,7 @@ function App() {
   });
 
   const [isChatLoading, setIsChatLoading] = useState(false);
-  const chatEndRef = useRef(null);
+  const messagesContainerRef = useRef(null);
 
   // Save chat messages to localStorage whenever they change
   useEffect(() => {
@@ -64,8 +64,11 @@ function App() {
   const [showCta, setShowCta] = useState(false);
 
   useEffect(() => {
-    if (chatEndRef.current) {
-      chatEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    if (isChatOpen && messagesContainerRef.current) {
+      messagesContainerRef.current.scrollTo({
+        top: messagesContainerRef.current.scrollHeight,
+        behavior: 'smooth'
+      });
     }
   }, [chatMessages, isChatOpen]);
 
@@ -1126,7 +1129,10 @@ Información de BioDent:
             </div>
 
             {/* Messages Body - Original Dark */}
-            <div className="flex-grow p-4 overflow-y-auto space-y-4 scrollbar-thin scrollbar-thumb-brand-gold/25 scrollbar-track-transparent bg-[#0A0A0A]">
+            <div 
+              ref={messagesContainerRef}
+              className="flex-grow p-4 overflow-y-auto space-y-4 scrollbar-thin scrollbar-thumb-brand-gold/25 scrollbar-track-transparent bg-[#0A0A0A] overscroll-contain"
+            >
               {chatMessages.map((m, idx) => (
                 <div 
                   key={idx} 
@@ -1154,7 +1160,6 @@ Información de BioDent:
                   </div>
                 </div>
               ))}
-              <div ref={chatEndRef} />
             </div>
 
             {/* Input Footer */}
