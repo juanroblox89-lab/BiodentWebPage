@@ -95,56 +95,21 @@ Responde siempre en español, de forma cálida, breve y profesional. No inventes
         userMessage
       ];
 
-      let botResponse = '';
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages: messagesToSend })
+      });
 
-      // 1. Try Vercel Serverless API Endpoint (/api/chat)
-      try {
-        const apiResponse = await fetch('/api/chat', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ messages: messagesToSend })
-        });
-
-        if (apiResponse.ok) {
-          const data = await apiResponse.json();
-          botResponse = data.choices?.[0]?.message?.content || '';
-        } else {
-          console.warn('Vercel /api/chat returned status:', apiResponse.status);
-        }
-      } catch (err) {
-        console.warn('Vercel /api/chat not reachable, attempting direct client fetch:', err);
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        console.error('Chat API error:', response.status, errorData);
+        throw new Error(errorData.error || `API error ${response.status}`);
       }
 
-      // 2. Direct Fallback if /api/chat didn't return a response
-      if (!botResponse) {
-        const apiKey = import.meta.env.VITE_NVIDIA_API_KEY || import.meta.env.NVIDIA_API_KEY || (typeof process !== 'undefined' && process.env ? (process.env.VITE_NVIDIA_API_KEY || process.env.NVIDIA_API_KEY) : '') || '';
-
-        const directResponse = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${apiKey}`
-          },
-          body: JSON.stringify({
-            model: 'nvidia/llama-3.3-nemotron-nano-omni-instruct',
-            messages: messagesToSend,
-            temperature: 0.7,
-            max_tokens: 256
-          })
-        });
-
-        if (directResponse.ok) {
-          const data = await directResponse.json();
-          botResponse = data.choices?.[0]?.message?.content || '';
-        } else {
-          const errText = await directResponse.text();
-          console.error('Direct NVIDIA fetch error status:', directResponse.status, errText);
-        }
-      }
-
-      if (!botResponse) {
-        botResponse = 'Disculpa, estoy teniendo problemas de conexión. Por favor escrébenos directamente a nuestro WhatsApp: https://wa.me/573114345328';
-      }
+      const data = await response.json();
+      const botResponse = data.choices?.[0]?.message?.content 
+        || 'Disculpa, no pude generar una respuesta. Contáctanos por WhatsApp: https://wa.me/573114345328';
 
       setChatMessages((prev) => [...prev, { role: 'assistant', content: botResponse }]);
     } catch (error) {

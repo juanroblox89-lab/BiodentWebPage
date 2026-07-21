@@ -1,60 +1,70 @@
-export default async function handler(req, res) {
-  // CORS Headers for Vercel Serverless Function
-  res.setHeader('Access-Control-Allow-Credentials', true);
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
-  res.setHeader(
-    'Access-Control-Allow-Headers',
-    'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization'
-  );
-
-  if (req.method === 'OPTIONS') {
-    res.status(200).end();
-    return;
+export default async function handler(request) {
+  // Handle CORS preflight
+  if (request.method === 'OPTIONS') {
+    return new Response(null, {
+      status: 200,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'POST, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type',
+      },
+    });
   }
 
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
+  if (request.method !== 'POST') {
+    return Response.json({ error: 'Method not allowed' }, { status: 405 });
   }
 
   const apiKey = process.env.NVIDIA_API_KEY || process.env.VITE_NVIDIA_API_KEY || '';
 
   if (!apiKey) {
-    return res.status(500).json({ 
-      error: 'NVIDIA_API_KEY missing on Vercel environment variables.' 
-    });
+    console.error('NVIDIA_API_KEY is not set in Vercel environment variables.');
+    return Response.json(
+      { error: 'API key not configured. Set NVIDIA_API_KEY in Vercel Environment Variables and redeploy.' },
+      { status: 500 }
+    );
   }
 
   try {
-    const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
-    const { messages } = body || {};
+    const body = await request.json();
+    const messages = body.messages || [];
 
     const nvidiaResponse = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`
+        'Authorization': `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
         model: 'nvidia/llama-3.3-nemotron-nano-omni-instruct',
-        messages: messages || [],
+        messages: messages,
         temperature: 0.7,
-        max_tokens: 256
-      })
+        max_tokens: 256,
+      }),
     });
 
     if (!nvidiaResponse.ok) {
       const errorText = await nvidiaResponse.text();
-      console.error('NVIDIA API Error status:', nvidiaResponse.status, errorText);
-      return res.status(nvidiaResponse.status).json({ 
-        error: `NVIDIA API Error (${nvidiaResponse.status}): ${errorText}` 
-      });
+      console.error(`NVIDIA API error ${nvidiaResponse.status}:`, errorText);
+      return Response.json(
+        { error: `NVIDIA API error (${nvidiaResponse.status})` },
+        { status: nvidiaResponse.status }
+      );
     }
 
     const data = await nvidiaResponse.json();
-    return res.status(200).json(data);
+    return Response.json(data, {
+      headers: { 'Access-Control-Allow-Origin': '*' },
+    });
   } catch (error) {
-    console.error('Vercel Serverless Function Error:', error);
-    return res.status(500).json({ error: error.message || 'Internal Server Error' });
+    console.error('Serverless function error:', error);
+    return Response.json(
+      { error: error.message || 'Internal Server Error' },
+      { status: 500 }
+    );
   }
 }
+
+export const config = {
+  runtime: 'edge',
+};
