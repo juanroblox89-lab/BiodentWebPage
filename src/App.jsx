@@ -12,13 +12,44 @@ function App() {
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [chatInput, setChatInput] = useState('');
   const [selectedImage, setSelectedImage] = useState(null); // base64 string
-  const fileInputRef = useRef(null);
+  const DEFAULT_GREETING = { role: 'assistant', content: '¡Hola! Bienvenido a BioDent. Con mucho gusto estoy para colaborar en lo que necesites sobre tus dientes y prótesis dentales. ¿En qué te podemos ayudar hoy? Si gustas, también puedes enviarme una foto de tus dientes.' };
 
-  const [chatMessages, setChatMessages] = useState([
-    { role: 'assistant', content: 'Hola, bienvenido a BioDent. ¿En qué te podemos colaborar hoy? Si deseas, también puedes adjuntar una foto de tus dientes para darte una apreciación inicial.' }
-  ]);
+  const [chatMessages, setChatMessages] = useState(() => {
+    try {
+      const saved = localStorage.getItem('biodent_chat_history');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch (e) {
+      console.warn('Could not load chat history:', e);
+    }
+    return [DEFAULT_GREETING];
+  });
+
   const [isChatLoading, setIsChatLoading] = useState(false);
   const chatEndRef = useRef(null);
+
+  // Save chat messages to localStorage whenever they change
+  useEffect(() => {
+    try {
+      const cleanToSave = chatMessages.map(m => ({
+        role: m.role,
+        content: m.content,
+        image: m.image ? '[Foto adjunta]' : undefined
+      }));
+      localStorage.setItem('biodent_chat_history', JSON.stringify(cleanToSave));
+    } catch (e) {
+      console.warn('Could not save chat history:', e);
+    }
+  }, [chatMessages]);
+
+  const clearChatHistory = () => {
+    setChatMessages([DEFAULT_GREETING]);
+    try {
+      localStorage.removeItem('biodent_chat_history');
+    } catch (e) {}
+  };
 
   // Chatbot CTAs State & Logic (Rotating every 10s)
   const ctas = [
@@ -110,16 +141,15 @@ function App() {
     setChatMessages((prev) => [...prev, { role: 'assistant', content: '' }]);
 
     try {
-      const systemPrompt = `Eres la recepcionista de la clínica odontológica BioDent en Bello, Antioquia (cerca al Parque Principal). Tu trato es muy humano, amable, fluido y profesional. Jamás menciones que eres una IA, un bot ni un modelo de lenguaje.
+      const systemPrompt = `Eres la recepcionista virtual de la clínica BioDent en Bello, Antioquia. Tu trato debe ser EXTREMADAMENTE AMABLE, educado, cálido y servicial. Usa expresiones amables como "Con mucho gusto", "Es un placer colaborarte" y "En BioDent nos encanta cuidar tu sonrisa". Jamás menciones que eres una IA, un bot ni un modelo de lenguaje.
 
-REGLAS OBLIGATORIAS:
-1. ÁMBITO EXCLUSIVO ODONTOLÓGICO: Tu ÚNICA función es responder consultas sobre odontología, salud oral, prótesis dentales y servicios de BioDent. Si el usuario te pregunta por cualquier tema ajeno a la odontología (deportes, política, cocina, tecnología, chistes, etc.), responde amablemente: "Disculpa, como recepcionista de BioDent solo puedo orientarte sobre odontología y nuestros servicios dentales. ¿En qué te podemos colaborar con tus dientes o prótesis?"
-2. CONCISIÓN Y VELOCIDAD: Responde de forma MUY BREVE, directa y clara en máximo 2 a 3 frases cortas.
-3. SIN EMOJIS EXCESIVOS: Usa máximo 1 emoji por mensaje o ninguno.
-4. BOTÓN DE WHATSAPP: Cuando sugieras agendar o cotizar, incluye la palabra WhatsApp en tu respuesta (sin escribir enlaces largos ni URLs).
+REGLAS STRICTAS DE ÁMBITO:
+1. EXCLUSIVO A DIENTES Y SALUD DENTAL: Tu ÚNICA función es responder sobre dientes, salud oral, prótesis dentales y servicios de la clínica BioDent. Si el usuario te pregunta sobre cualquier tema que NO sea de dientes u odontología (por ejemplo: política, deportes, cocina, tecnología, chistes, cultura general, etc.), responde de forma muy dulce y educada: "Con mucho gusto te atendería, pero como recepcionista de BioDent estoy dedicada exclusivamente a consultas sobre tus dientes y tu salud oral. ¿Tienes alguna inquietud sobre tu sonrisa, prótesis o agendamiento?"
+2. BREVE Y CONCISO: Responde en máximo 2 a 3 frases cortas.
+3. BOTÓN DE WHATSAPP: Cuando el usuario consulte precios o quiera agendar cita, incluye la palabra WhatsApp en tu respuesta de forma natural.
 
 Información de BioDent:
-- Tratamientos: Prótesis flexibles (livianas, estéticas), totales y Acker parciales.
+- Especialidad: Prótesis flexibles (livianas, estéticas), prótesis totales y prótesis Acker parciales.
 - Ubicación: Cerca al Parque Principal de Bello, Antioquia.
 - Horarios: Lunes a Viernes 9am - 6pm | Sábados 9am - 1pm.`;
 
@@ -1075,13 +1105,24 @@ Información de BioDent:
                   <span className="text-[9px] text-brand-gold tracking-wider uppercase font-semibold">● En línea</span>
                 </div>
               </div>
-              <button 
-                onClick={() => setIsChatOpen(false)}
-                className="text-brand-secondary hover:text-brand-white text-lg transition-colors p-1"
-                aria-label="Cerrar asistente"
-              >
-                &times;
-              </button>
+              <div className="flex items-center gap-1.5">
+                <button 
+                  onClick={clearChatHistory}
+                  className="text-brand-secondary hover:text-red-400 text-xs transition-colors p-1.5 rounded-lg border border-transparent hover:border-red-400/20"
+                  title="Nueva conversación / Limpiar historial"
+                >
+                  <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
+                    <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" />
+                  </svg>
+                </button>
+                <button 
+                  onClick={() => setIsChatOpen(false)}
+                  className="text-brand-secondary hover:text-brand-white text-lg transition-colors p-1"
+                  aria-label="Cerrar asistente"
+                >
+                  &times;
+                </button>
+              </div>
             </div>
 
             {/* Messages Body - Solid #0A0A0A */}
