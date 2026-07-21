@@ -17,11 +17,56 @@ function App() {
   const [isChatLoading, setIsChatLoading] = useState(false);
   const chatEndRef = useRef(null);
 
+  // Chatbot CTAs State & Logic (Rotating every 10s)
+  const ctas = [
+    "💬 ¿Cuánto cuesta una prótesis flexible?",
+    "😁 Pregúntame por nuestros tratamientos",
+    "📍 Estamos cerca al Parque de Bello",
+    "⏰ Atendemos sábados de 9am a 1pm",
+    "✨ ¿Quieres saber qué prótesis es para ti?",
+    "📲 Te orientamos gratis por WhatsApp"
+  ];
+  const [currentCtaIndex, setCurrentCtaIndex] = useState(0);
+  const [showCta, setShowCta] = useState(false);
+
   useEffect(() => {
     if (chatEndRef.current) {
       chatEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
   }, [chatMessages, isChatOpen]);
+
+  useEffect(() => {
+    if (isChatOpen) {
+      setShowCta(false);
+      return;
+    }
+
+    // Trigger every 10 seconds
+    const interval = setInterval(() => {
+      setCurrentCtaIndex((prev) => (prev + 1) % ctas.length);
+      setShowCta(true);
+
+      // Auto hide after 6 seconds
+      setTimeout(() => {
+        setShowCta(false);
+      }, 6000);
+    }, 10000);
+
+    // Initial trigger 3s after load for smooth entrance
+    const initialTimer = setTimeout(() => {
+      if (!isChatOpen) {
+        setShowCta(true);
+        setTimeout(() => {
+          setShowCta(false);
+        }, 6000);
+      }
+    }, 3000);
+
+    return () => {
+      clearInterval(interval);
+      clearTimeout(initialTimer);
+    };
+  }, [isChatOpen]);
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
@@ -108,11 +153,11 @@ Responde siempre en español, de forma cálida, breve y profesional. No inventes
       </div>
 
       {/* Floating Navigation Bar */}
-      <header className="fixed top-6 left-1/2 -translate-x-1/2 w-[92%] max-w-6xl backdrop-blur-md bg-brand-bg/80 border border-brand-gold/15 rounded-full px-6 py-3.5 flex justify-between items-center z-50 transition-all duration-300 shadow-lg">
+      <header className="fixed top-4 sm:top-6 left-1/2 -translate-x-1/2 w-[94%] sm:w-[92%] max-w-6xl backdrop-blur-md bg-brand-bg/85 border border-brand-gold/15 rounded-full px-3.5 sm:px-6 py-2.5 sm:py-3.5 flex justify-between items-center z-50 transition-all duration-300 shadow-lg">
         {/* Brand Name */}
-        <a href="#inicio" className="flex items-center gap-2 group">
-          <img src={biodentLogoImg} alt="BioDent Logo" className="w-8 h-8 rounded-full border border-brand-gold/20" />
-          <span className="font-heading font-bold text-brand-white text-base tracking-[0.25em] ml-1">BIODENT</span>
+        <a href="#inicio" className="flex items-center gap-1.5 sm:gap-2 group shrink-0">
+          <img src={biodentLogoImg} alt="BioDent Logo" className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border border-brand-gold/20 object-contain" />
+          <span className="font-heading font-bold text-brand-white text-xs sm:text-base tracking-[0.2em] sm:tracking-[0.25em] ml-0.5 sm:ml-1">BIODENT</span>
         </a>
 
         {/* Desktop Menu */}
@@ -124,24 +169,24 @@ Responde siempre en español, de forma cálida, breve y profesional. No inventes
           <a href="#contacto" className="text-brand-secondary hover:text-brand-gold transition-colors font-heading text-xs font-semibold uppercase tracking-wider">Contacto</a>
         </nav>
 
-        {/* Right CTA and Social Icons */}
-        <div className="flex items-center gap-4">
-          <div className="hidden sm:flex items-center gap-3.5 border-r border-brand-gold/10 pr-4 text-[#C9A961]">
+        {/* Right CTA and Social Icons - Visible on Mobile & Desktop */}
+        <div className="flex items-center gap-2 sm:gap-4">
+          <div className="flex items-center gap-2 sm:gap-3.5 border-r border-brand-gold/15 pr-2 sm:pr-4 text-[#C9A961]">
             {/* WhatsApp Icon */}
-            <a href="https://wa.me/573114345328" target="_blank" rel="noopener noreferrer" className="hover:text-brand-glow hover:scale-110 transition-all" title="WhatsApp">
-              <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
+            <a href="https://wa.me/573114345328" target="_blank" rel="noopener noreferrer" className="hover:text-brand-glow hover:scale-110 transition-all p-1" title="WhatsApp">
+              <svg className="w-4 h-4 sm:w-5 sm:h-5 fill-current" viewBox="0 0 24 24">
                 <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.514 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.724-1.455L0 24zm6.59-4.846c1.62.962 3.21 1.493 4.904 1.496 5.434.004 9.859-4.417 9.862-9.857.002-2.636-1.023-5.11-2.884-6.974C16.672 1.955 14.195.932 11.56.932c-5.443 0-9.87 4.42-9.873 9.861-.001 1.776.479 3.51 1.39 5.048l-.946 3.453 3.536-.93c1.558.847 3.11 1.29 4.39 1.29zM16.59 13.9c-.277-.14-1.643-.812-1.896-.905-.254-.094-.44-.14-.623.14-.184.278-.712.905-.873 1.09-.16.185-.32.207-.597.068-.277-.14-1.17-.43-2.228-1.374-.823-.734-1.38-1.64-1.54-1.92-.162-.276-.017-.426.12-.564.125-.124.277-.323.416-.484.14-.16.184-.277.277-.463.093-.185.047-.348-.024-.486-.07-.14-.622-1.5-.853-2.053-.225-.54-.452-.467-.622-.476-.16-.008-.344-.01-.528-.01-.184 0-.485.07-.738.348-.254.278-.97.948-.97 2.31 0 1.36.99 2.68 1.127 2.866.138.186 1.948 2.973 4.72 4.17 1.102.47 1.96.75 2.628.963.69.22 1.32.19 1.81.114.55-.085 1.643-.67 1.874-1.32.23-.65.23-1.205.162-1.32-.068-.113-.253-.185-.53-.325z" />
               </svg>
             </a>
             {/* Instagram Icon */}
-            <a href="https://www.instagram.com/biodent_parquedebello/" target="_blank" rel="noopener noreferrer" className="hover:text-brand-glow hover:scale-110 transition-all" title="Instagram">
-              <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
+            <a href="https://www.instagram.com/biodent_parquedebello/" target="_blank" rel="noopener noreferrer" className="hover:text-brand-glow hover:scale-110 transition-all p-1" title="Instagram">
+              <svg className="w-4 h-4 sm:w-5 sm:h-5 fill-current" viewBox="0 0 24 24">
                 <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.051.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z" />
               </svg>
             </a>
             {/* Facebook Icon */}
-            <a href="https://www.facebook.com/people/Dra-Claudia-Mabel-Tapias/61587872871889/" target="_blank" rel="noopener noreferrer" className="hover:text-brand-glow hover:scale-110 transition-all" title="Facebook">
-              <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
+            <a href="https://www.facebook.com/people/Dra-Claudia-Mabel-Tapias/61587872871889/" target="_blank" rel="noopener noreferrer" className="hover:text-brand-glow hover:scale-110 transition-all p-1" title="Facebook">
+              <svg className="w-4 h-4 sm:w-5 sm:h-5 fill-current" viewBox="0 0 24 24">
                 <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
               </svg>
             </a>
@@ -150,37 +195,37 @@ Responde siempre en español, de forma cálida, breve y profesional. No inventes
             href="https://wa.me/573114345328" 
             target="_blank"
             rel="noopener noreferrer"
-            className="shimmer-btn relative overflow-hidden bg-transparent border border-brand-gold text-brand-gold px-5 py-2 rounded-full font-heading text-xs font-semibold uppercase tracking-wider transition-all duration-300 hover:bg-brand-gold hover:text-brand-bg hover:shadow-[0_0_15px_rgba(201,169,97,0.3)]"
+            className="shimmer-btn relative overflow-hidden bg-transparent border border-brand-gold text-brand-gold px-3 sm:px-5 py-1.5 sm:py-2 rounded-full font-heading text-[10px] sm:text-xs font-semibold uppercase tracking-wider transition-all duration-300 hover:bg-brand-gold hover:text-brand-bg hover:shadow-[0_0_15px_rgba(201,169,97,0.3)] shrink-0"
           >
             Agendar Cita
           </a>
         </div>
       </header>
 
-      {/* Hero Section with Doctor Backdrop */}
+      {/* Hero Section with Responsive Mobile Doctor Backdrop */}
       <section id="inicio" className="relative min-h-screen flex flex-col justify-center items-start pt-28 pb-16 px-6 md:px-16 lg:px-24 z-10">
         
-        {/* Doctor background image integration with linear gradient */}
+        {/* Doctor background image integration with object-top for mobile responsiveness */}
         <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden flex justify-end">
           <div className="w-full lg:w-4/5 h-full relative">
             <img 
               src={drClaudiaImg} 
               alt="Dra. Claudia Backdrop" 
-              className="w-full h-full object-cover object-right opacity-80" 
+              className="w-full h-full object-cover object-top lg:object-right opacity-75 sm:opacity-80" 
             />
-            {/* Dark gradient overlay to preserve quiet luxury text contrast */}
-            <div className="absolute inset-0 bg-gradient-to-r from-brand-bg via-brand-bg/90 lg:via-brand-bg/60 to-transparent"></div>
+            {/* Dark gradient overlay to preserve quiet luxury text contrast across all screen sizes */}
+            <div className="absolute inset-0 bg-gradient-to-t md:bg-gradient-to-r from-[#0A0A0A] via-[#0A0A0A]/90 lg:via-[#0A0A0A]/60 to-transparent"></div>
           </div>
         </div>
 
         <div className="max-w-2xl text-left flex flex-col items-start relative z-10">
           
-          {/* Logo with circular border */}
+          {/* Logo with circular border - responsive scaling */}
           <div className="relative mb-6 select-none">
             <img 
               src={biodentLogoImg} 
               alt="BioDent Logo Oficial" 
-              className="w-24 h-24 rounded-full border-2 border-brand-gold/40 shadow-2xl p-1 bg-black/60" 
+              className="w-20 h-20 sm:w-24 sm:h-24 rounded-full border-2 border-brand-gold/40 shadow-2xl p-1 bg-black/60 object-contain" 
             />
           </div>
 
@@ -201,7 +246,7 @@ Responde siempre en español, de forma cálida, breve y profesional. No inventes
           </h1>
 
           {/* Description banner (Heart icon) */}
-          <div className="bg-brand-bg/85 backdrop-blur-sm border border-brand-gold/15 rounded-2xl p-4 mb-8 flex items-center gap-4 text-left shadow-lg">
+          <div className="bg-brand-bg/90 backdrop-blur-sm border border-brand-gold/15 rounded-2xl p-4 mb-8 flex items-center gap-4 text-left shadow-lg max-w-lg">
             <div className="w-10 h-10 rounded-full border border-brand-gold/30 flex items-center justify-center text-brand-gold shrink-0 bg-black/30">
               <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
                 <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
@@ -212,24 +257,45 @@ Responde siempre en español, de forma cálida, breve y profesional. No inventes
             </p>
           </div>
 
-          {/* CTA Buttons */}
-          <div className="flex flex-col sm:flex-row gap-4 items-center">
+          {/* CTA Buttons: WhatsApp, Instagram & Facebook links */}
+          <div className="flex flex-col sm:flex-row flex-wrap gap-3 items-stretch sm:items-center w-full">
+            {/* WhatsApp Button */}
             <a 
               href={getWhatsAppLink("Hola Dra. Claudia, vi su publicación y me gustaría agendar una valoración para una prótesis dental.")}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-3 bg-brand-gold text-brand-bg px-7 py-3.5 rounded-full font-heading text-xs font-bold uppercase tracking-widest transition-all duration-300 hover:bg-brand-glow hover:shadow-[0_0_20px_rgba(232,200,120,0.4)] group"
+              className="flex items-center justify-center gap-2.5 bg-brand-gold text-[#0A0A0A] px-6 py-3 rounded-full font-heading text-xs font-bold uppercase tracking-widest transition-all duration-300 hover:bg-brand-glow hover:shadow-[0_0_20px_rgba(232,200,120,0.4)] group"
             >
-              <svg className="w-5 h-5 fill-current transition-transform group-hover:scale-110" viewBox="0 0 24 24">
+              <svg className="w-4 h-4 fill-current transition-transform group-hover:scale-110" viewBox="0 0 24 24">
                 <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.514 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.724-1.455L0 24zm6.59-4.846c1.62.962 3.21 1.493 4.904 1.496 5.434.004 9.859-4.417 9.862-9.857.002-2.636-1.023-5.11-2.884-6.974C16.672 1.955 14.195.932 11.56.932c-5.443 0-9.87 4.42-9.873 9.861-.001 1.776.479 3.51 1.39 5.048l-.946 3.453 3.536-.93c1.558.847 3.11 1.29 4.39 1.29zM16.59 13.9c-.277-.14-1.643-.812-1.896-.905-.254-.094-.44-.14-.623.14-.184.278-.712.905-.873 1.09-.16.185-.32.207-.597.068-.277-.14-1.17-.43-2.228-1.374-.823-.734-1.38-1.64-1.54-1.92-.162-.276-.017-.426.12-.564.125-.124.277-.323.416-.484.14-.16.184-.277.277-.463.093-.185.047-.348-.024-.486-.07-.14-.622-1.5-.853-2.053-.225-.54-.452-.467-.622-.476-.16-.008-.344-.01-.528-.01-.184 0-.485.07-.738.348-.254.278-.97.948-.97 2.31 0 1.36.99 2.68 1.127 2.866.138.186 1.948 2.973 4.72 4.17 1.102.47 1.96.75 2.628.963.69.22 1.32.19 1.81.114.55-.085 1.643-.67 1.874-1.32.23-.65.23-1.205.162-1.32-.068-.113-.253-.185-.53-.325z" />
               </svg>
               WhatsApp de la Clínica
             </a>
+
+            {/* Instagram Button */}
             <a 
-              href="#servicios" 
-              className="px-6 py-3.5 rounded-full font-heading text-xs font-semibold uppercase tracking-widest text-brand-secondary hover:text-brand-white transition-colors border border-transparent hover:border-brand-gold/20"
+              href="https://www.instagram.com/biodent_parquedebello/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-center gap-2.5 bg-black/60 border border-brand-gold/40 text-brand-white px-5 py-3 rounded-full font-heading text-xs font-semibold uppercase tracking-wider hover:border-brand-gold hover:text-brand-gold transition-all duration-300 group"
             >
-              Ver Tratamientos
+              <svg className="w-4 h-4 fill-current text-[#C9A961] transition-transform group-hover:scale-110" viewBox="0 0 24 24">
+                <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.051.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z" />
+              </svg>
+              Instagram de la Clínica
+            </a>
+
+            {/* Facebook Button */}
+            <a 
+              href="https://www.facebook.com/people/Dra-Claudia-Mabel-Tapias/61587872871889/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-center gap-2.5 bg-black/60 border border-brand-gold/40 text-brand-white px-5 py-3 rounded-full font-heading text-xs font-semibold uppercase tracking-wider hover:border-brand-gold hover:text-brand-gold transition-all duration-300 group"
+            >
+              <svg className="w-4 h-4 fill-current text-[#C9A961] transition-transform group-hover:scale-110" viewBox="0 0 24 24">
+                <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+              </svg>
+              Facebook de la Clínica
             </a>
           </div>
 
@@ -642,7 +708,7 @@ Responde siempre en español, de forma cálida, breve y profesional. No inventes
               alt="Después de Prótesis Dental" 
               className="absolute inset-0 w-full h-full object-cover filter contrast-[1.03] brightness-[0.95]" 
             />
-            <div className="absolute top-4 right-4 z-20 bg-brand-gold text-brand-bg font-heading text-[10px] tracking-widest uppercase font-bold py-1 px-3.5 rounded-full">
+            <div className="absolute top-4 right-4 z-20 bg-brand-gold text-[#0A0A0A] font-heading text-[10px] tracking-widest uppercase font-bold py-1 px-3.5 rounded-full">
               Resultado Final (Después)
             </div>
           </div>
@@ -675,7 +741,7 @@ Responde siempre en español, de forma cálida, breve y profesional. No inventes
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
             
             {/* Card 1 */}
-            <div className="lg:col-span-4 bg-brand-bg/90 backdrop-blur-sm gold-glow-border rounded-xl p-8 flex flex-col justify-between lg:translate-y-4 shadow-xl">
+            <div className="lg:col-span-4 bg-[#0A0A0A]/90 backdrop-blur-sm gold-glow-border rounded-xl p-8 flex flex-col justify-between lg:translate-y-4 shadow-xl">
               <div className="mb-8">
                 <span className="font-heading text-5xl text-brand-gold/20 block mb-2 leading-none">“</span>
                 <p className="font-sans text-sm md:text-base text-brand-secondary font-light leading-relaxed italic">
@@ -690,7 +756,7 @@ Responde siempre en español, de forma cálida, breve y profesional. No inventes
             </div>
 
             {/* Card 2 */}
-            <div className="lg:col-span-4 bg-brand-bg/95 backdrop-blur-sm gold-glow-border rounded-xl p-8 md:p-10 flex flex-col justify-between border-brand-gold/30 shadow-[0_0_20px_rgba(201,169,97,0.05)]">
+            <div className="lg:col-span-4 bg-[#0A0A0A]/95 backdrop-blur-sm gold-glow-border rounded-xl p-8 md:p-10 flex flex-col justify-between border-brand-gold/30 shadow-[0_0_20px_rgba(201,169,97,0.05)]">
               <div className="mb-8">
                 <span className="font-heading text-5xl text-brand-gold/30 block mb-2 leading-none">“</span>
                 <p className="font-sans text-base text-brand-white font-light leading-relaxed italic">
@@ -705,7 +771,7 @@ Responde siempre en español, de forma cálida, breve y profesional. No inventes
             </div>
 
             {/* Card 3 */}
-            <div className="lg:col-span-4 bg-brand-bg/90 backdrop-blur-sm gold-glow-border rounded-xl p-8 flex flex-col justify-between lg:-translate-y-4 shadow-xl">
+            <div className="lg:col-span-4 bg-[#0A0A0A]/90 backdrop-blur-sm gold-glow-border rounded-xl p-8 flex flex-col justify-between lg:-translate-y-4 shadow-xl">
               <div className="mb-8">
                 <span className="font-heading text-5xl text-brand-gold/20 block mb-2 leading-none">“</span>
                 <p className="font-sans text-sm md:text-base text-brand-secondary font-light leading-relaxed italic">
@@ -725,7 +791,7 @@ Responde siempre en español, de forma cálida, breve y profesional. No inventes
 
       {/* Appointment and Location Section */}
       <section id="contacto" className="relative py-28 px-6 md:px-12 z-10 max-w-5xl mx-auto">
-        <div className="bg-brand-bg/40 backdrop-blur-md gold-glow-border rounded-3xl overflow-hidden grid grid-cols-1 md:grid-cols-2 shadow-2xl">
+        <div className="bg-[#0A0A0A] border border-brand-gold/25 rounded-3xl overflow-hidden grid grid-cols-1 md:grid-cols-2 shadow-2xl">
           
           {/* Info Side */}
           <div className="p-8 md:p-12 flex flex-col justify-between gap-8">
@@ -789,7 +855,7 @@ Responde siempre en español, de forma cálida, breve y profesional. No inventes
               href="https://wa.me/573114345328"
               target="_blank"
               rel="noopener noreferrer"
-              className="shimmer-btn relative overflow-hidden w-full text-center bg-brand-gold text-brand-bg py-3.5 rounded-xl font-heading text-xs font-bold uppercase tracking-widest hover:bg-brand-glow hover:shadow-[0_0_15px_rgba(232,200,120,0.3)] transition-all mt-4"
+              className="shimmer-btn relative overflow-hidden w-full text-center bg-brand-gold text-[#0A0A0A] py-3.5 rounded-xl font-heading text-xs font-bold uppercase tracking-widest hover:bg-brand-glow hover:shadow-[0_0_15px_rgba(232,200,120,0.3)] transition-all mt-4"
             >
               Escríbenos por WhatsApp
             </a>
@@ -803,7 +869,7 @@ Responde siempre en español, de forma cálida, breve y profesional. No inventes
               className="w-full h-full object-cover" 
             />
             {/* Dark wood overlay */}
-            <div className="absolute inset-0 bg-gradient-to-r from-brand-bg/90 via-transparent to-transparent md:from-brand-bg/95"></div>
+            <div className="absolute inset-0 bg-gradient-to-r from-[#0A0A0A]/90 via-transparent to-transparent md:from-[#0A0A0A]/95"></div>
             
             {/* Overlay brand watermark */}
             <div className="absolute bottom-6 right-6 z-20 flex flex-col items-end text-right text-brand-white/80">
@@ -819,7 +885,7 @@ Responde siempre en español, de forma cálida, breve y profesional. No inventes
       <footer className="relative py-10 px-6 md:px-12 z-10 border-t border-brand-gold/10 bg-[#070707] text-center">
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
           <div className="flex items-center gap-2">
-            <img src={biodentLogoImg} alt="BioDent Logo" className="w-6 h-6 rounded-full border border-brand-gold/30" />
+            <img src={biodentLogoImg} alt="BioDent Logo" className="w-6 h-6 rounded-full border border-brand-gold/30 object-contain" />
             <span className="font-heading font-bold text-brand-white text-xs tracking-[0.2em]">BIODENT</span>
           </div>
           <p className="font-sans text-[11px] text-brand-secondary font-light">
@@ -833,14 +899,37 @@ Responde siempre en español, de forma cálida, breve y profesional. No inventes
 
       {/* Floating Chatbot Widget */}
       <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end">
-        {/* Chat window panel */}
+        
+        {/* Automatic CTA Tooltip Bubble (Every 10 seconds) */}
+        {showCta && !isChatOpen && (
+          <div 
+            onClick={() => { setIsChatOpen(true); setShowCta(false); }}
+            className="mb-3 bg-[#16140F] border border-[#C9A961]/50 text-white rounded-2xl py-2.5 px-4 shadow-[0_4px_20px_rgba(0,0,0,0.8),0_0_15px_rgba(201,169,97,0.2)] cursor-pointer flex items-center gap-2.5 max-w-[290px] animate-fade-in transition-transform hover:scale-105 group select-none"
+          >
+            <span className="text-xs font-medium leading-snug text-brand-white group-hover:text-brand-gold transition-colors">
+              {ctas[currentCtaIndex]}
+            </span>
+            <button 
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowCta(false);
+              }}
+              className="text-brand-secondary hover:text-white text-base font-bold ml-1 p-0.5 shrink-0"
+              aria-label="Cerrar aviso"
+            >
+              &times;
+            </button>
+          </div>
+        )}
+
+        {/* Chat window panel - SOLID #0A0A0A BACKGROUND (NO TRANSPARENCY) */}
         {isChatOpen && (
-          <div className="w-[360px] h-[500px] bg-brand-bg border border-brand-gold/30 rounded-2xl shadow-2xl flex flex-col overflow-hidden mb-4 animate-slow-pulse focus-within:animate-none">
+          <div className="w-[360px] h-[500px] bg-[#0A0A0A] border border-[#C9A961]/40 rounded-2xl shadow-2xl flex flex-col overflow-hidden mb-4 focus-within:animate-none opacity-100">
             
             {/* Header */}
-            <div className="bg-[#0e0e0e] border-b border-brand-gold/15 p-4 flex justify-between items-center">
+            <div className="bg-[#111111] border-b border-[#C9A961]/20 p-4 flex justify-between items-center opacity-100">
               <div className="flex items-center gap-2.5">
-                <img src={biodentLogoImg} alt="BioDent Mini Logo" className="w-7 h-7 rounded-full border border-brand-gold/30" />
+                <img src={biodentLogoImg} alt="BioDent Mini Logo" className="w-7 h-7 rounded-full border border-brand-gold/30 object-contain" />
                 <div>
                   <h4 className="font-heading text-xs font-bold text-brand-white tracking-widest uppercase">Asistente BioDent</h4>
                   <span className="text-[9px] text-brand-gold tracking-wider uppercase font-semibold">En línea</span>
@@ -855,8 +944,8 @@ Responde siempre en español, de forma cálida, breve y profesional. No inventes
               </button>
             </div>
 
-            {/* Messages Body */}
-            <div className="flex-grow p-4 overflow-y-auto space-y-4 scrollbar-thin scrollbar-thumb-brand-gold/25 scrollbar-track-transparent">
+            {/* Messages Body - Solid #0A0A0A */}
+            <div className="flex-grow p-4 overflow-y-auto space-y-4 scrollbar-thin scrollbar-thumb-brand-gold/25 scrollbar-track-transparent bg-[#0A0A0A] opacity-100">
               {chatMessages.map((m, idx) => (
                 <div 
                   key={idx} 
@@ -865,8 +954,8 @@ Responde siempre en español, de forma cálida, breve y profesional. No inventes
                   <div 
                     className={`max-w-[80%] rounded-2xl px-4 py-2.5 text-xs leading-relaxed ${
                       m.role === 'user' 
-                        ? 'bg-brand-gold text-brand-bg font-medium rounded-tr-none' 
-                        : 'bg-[#1A1A1A] text-brand-white rounded-tl-none border border-brand-gold/5'
+                        ? 'bg-[#C9A961] text-[#0A0A0A] font-semibold rounded-tr-none' 
+                        : 'bg-[#1A1A1A] text-brand-white rounded-tl-none border border-[#C9A961]/20'
                     }`}
                   >
                     {m.content}
@@ -875,7 +964,7 @@ Responde siempre en español, de forma cálida, breve y profesional. No inventes
               ))}
               {isChatLoading && (
                 <div className="flex justify-start">
-                  <div className="bg-[#1A1A1A] text-brand-secondary rounded-2xl rounded-tl-none px-4 py-2.5 text-[10px] tracking-wider uppercase font-semibold animate-pulse border border-brand-gold/5">
+                  <div className="bg-[#1A1A1A] text-brand-secondary rounded-2xl rounded-tl-none px-4 py-2.5 text-[10px] tracking-wider uppercase font-semibold animate-pulse border border-[#C9A961]/20">
                     Asistente escribiendo...
                   </div>
                 </div>
@@ -884,19 +973,19 @@ Responde siempre en español, de forma cálida, breve y profesional. No inventes
             </div>
 
             {/* Input Footer */}
-            <form onSubmit={handleSendMessage} className="p-3 border-t border-brand-gold/15 bg-[#0e0e0e] flex gap-2">
+            <form onSubmit={handleSendMessage} className="p-3 border-t border-[#C9A961]/20 bg-[#111111] flex gap-2 opacity-100">
               <input 
                 type="text" 
                 value={chatInput}
                 onChange={(e) => setChatInput(e.target.value)}
                 placeholder="Escribe tu mensaje aquí..."
                 disabled={isChatLoading}
-                className="flex-grow bg-brand-bg border border-brand-gold/20 rounded-xl px-3.5 py-2 text-xs text-brand-white focus:outline-none focus:border-brand-gold disabled:opacity-50 transition-colors"
+                className="flex-grow bg-[#1A1A1A] border border-[#C9A961]/30 rounded-xl px-3.5 py-2 text-xs text-brand-white focus:outline-none focus:border-brand-gold disabled:opacity-50 transition-colors"
               />
               <button 
                 type="submit"
                 disabled={isChatLoading || !chatInput.trim()}
-                className="w-10 h-10 rounded-xl bg-brand-gold text-brand-bg flex items-center justify-center shrink-0 hover:bg-brand-glow disabled:opacity-50 transition-colors"
+                className="w-10 h-10 rounded-xl bg-brand-gold text-[#0A0A0A] flex items-center justify-center shrink-0 hover:bg-brand-glow disabled:opacity-50 transition-colors font-bold"
                 aria-label="Enviar mensaje"
               >
                 <svg className="w-4 h-4 fill-current transform rotate-45" viewBox="0 0 24 24">
@@ -908,14 +997,31 @@ Responde siempre en español, de forma cálida, breve y profesional. No inventes
           </div>
         )}
 
-        {/* Floating Bubble Button */}
+        {/* Floating Custom Robot-Tooth Icon Button (56x56px) */}
         <button 
           onClick={() => setIsChatOpen(!isChatOpen)}
-          className="w-14 h-14 rounded-full bg-brand-gold text-brand-bg flex items-center justify-center shadow-2xl hover:scale-105 active:scale-95 transition-transform duration-300 hover:shadow-[0_0_20px_rgba(201,169,97,0.4)]"
+          className="w-[56px] h-[56px] rounded-full bg-[#0A0A0A] border border-[#C9A961] flex items-center justify-center shadow-[0_0_16px_rgba(201,169,97,0.4)] hover:shadow-[0_0_24px_rgba(201,169,97,0.75)] hover:scale-105 active:scale-95 transition-all duration-300 group shrink-0"
           aria-label="Abrir asistente de chat"
         >
-          <svg className="w-6 h-6 fill-none stroke-current stroke-2" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+          {/* Custom SVG: Tooth in gold + Robot face */}
+          <svg className="w-8 h-8 text-[#C9A961] transition-transform group-hover:rotate-6" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+            {/* Tooth Outline */}
+            <path d="M16 4.5C11.5 4.5 8 7 8 11.5C8 15.5 9.5 19.5 11.5 24.5C12.3 26.5 13.5 28 14.5 28C15.3 28 15.6 26.5 16 25C16.4 26.5 16.7 28 17.5 28C18.5 28 19.7 26.5 20.5 24.5C22.5 19.5 24 15.5 24 11.5C24 7 20.5 4.5 16 4.5Z" 
+                  stroke="#C9A961" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+            
+            {/* Antenna */}
+            <line x1="16" y1="7" x2="16" y2="9.5" stroke="#C9A961" strokeWidth="1.5" strokeLinecap="round" />
+            <circle cx="16" cy="6.2" r="1.1" fill="#C9A961" />
+            
+            {/* Robot Head Box */}
+            <rect x="11.5" y="9.5" width="9" height="7" rx="1.5" stroke="#C9A961" strokeWidth="1.5" fill="#0A0A0A" />
+            
+            {/* Square Eyes */}
+            <rect x="13.2" y="11.8" width="1.8" height="1.8" fill="#C9A961" rx="0.3" />
+            <rect x="17" y="11.8" width="1.8" height="1.8" fill="#C9A961" rx="0.3" />
+            
+            {/* Robot Mouth */}
+            <path d="M14 15H18" stroke="#C9A961" strokeWidth="1.2" strokeLinecap="round" />
           </svg>
         </button>
       </div>
