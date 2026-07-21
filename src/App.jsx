@@ -8,15 +8,24 @@ import drClaudiaImg from './assets/dr_claudia.png'
 import beautifulSmileImg from './assets/beautiful_smile.png'
 
 function App() {
-  // Chatbot State
+  // Chatbot State (Recreated From Scratch)
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [chatInput, setChatInput] = useState('');
-  const [selectedImage, setSelectedImage] = useState(null); // base64 string
-  const DEFAULT_GREETING = { role: 'assistant', content: '¡Hola! Bienvenido a BioDent. Con mucho gusto estoy para colaborar en lo que necesites sobre tus dientes y prótesis dentales. ¿En qué te podemos ayudar hoy? Si gustas, también puedes enviarme una foto de tus dientes.' };
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [showHistoryModal, setShowHistoryModal] = useState(false);
+  const [isChatLoading, setIsChatLoading] = useState(false);
+
+  const messagesContainerRef = useRef(null);
+  const fileInputRef = useRef(null);
+
+  const DEFAULT_GREETING = { 
+    role: 'assistant', 
+    content: '¡Hola! Bienvenido a BioDent Bello. Soy tu asistente de recepción virtual y estoy encantada de colaborarte con tus dudas sobre dientes, tratamientos y prótesis dentales. ¿En qué puedo ayudarte hoy? Si deseas, también puedes enviarme una foto de tus dientes.' 
+  };
 
   const [chatMessages, setChatMessages] = useState(() => {
     try {
-      const saved = localStorage.getItem('biodent_chat_history');
+      const saved = localStorage.getItem('biodent_chat_v4');
       if (saved) {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) return parsed;
@@ -27,10 +36,7 @@ function App() {
     return [DEFAULT_GREETING];
   });
 
-  const [isChatLoading, setIsChatLoading] = useState(false);
-  const messagesContainerRef = useRef(null);
-
-  // Save chat messages to localStorage whenever they change
+  // Save chat to localStorage with try/catch safety
   useEffect(() => {
     try {
       const cleanToSave = chatMessages.map(m => ({
@@ -38,7 +44,7 @@ function App() {
         content: m.content,
         image: m.image ? '[Foto adjunta]' : undefined
       }));
-      localStorage.setItem('biodent_chat_history', JSON.stringify(cleanToSave));
+      localStorage.setItem('biodent_chat_v4', JSON.stringify(cleanToSave));
     } catch (e) {
       console.warn('Could not save chat history:', e);
     }
@@ -47,22 +53,12 @@ function App() {
   const clearChatHistory = () => {
     setChatMessages([DEFAULT_GREETING]);
     try {
-      localStorage.removeItem('biodent_chat_history');
+      localStorage.removeItem('biodent_chat_v4');
     } catch (e) {}
+    setShowHistoryModal(false);
   };
 
-  // Chatbot CTAs State & Logic (Rotating every 10s)
-  const ctas = [
-    "💬 ¿Cuánto cuesta una prótesis flexible?",
-    "📸 ¿Puedo enviar una foto de mis dientes?",
-    "😁 Pregúntame por nuestros tratamientos",
-    "📍 ¿Dónde están ubicados en Bello?",
-    "⏰ ¿Qué horarios de atención tienen?",
-    "✨ ¿Qué prótesis es la más recomendada?"
-  ];
-  const [currentCtaIndex, setCurrentCtaIndex] = useState(0);
-  const [showCta, setShowCta] = useState(false);
-
+  // Scroll to bottom of chat list inside container only
   useEffect(() => {
     if (isChatOpen && messagesContainerRef.current) {
       messagesContainerRef.current.scrollTo({
@@ -71,36 +67,6 @@ function App() {
       });
     }
   }, [chatMessages, isChatOpen]);
-
-  useEffect(() => {
-    if (isChatOpen) {
-      setShowCta(false);
-      return;
-    }
-
-    const interval = setInterval(() => {
-      setCurrentCtaIndex((prev) => (prev + 1) % ctas.length);
-      setShowCta(true);
-
-      setTimeout(() => {
-        setShowCta(false);
-      }, 6000);
-    }, 10000);
-
-    const initialTimer = setTimeout(() => {
-      if (!isChatOpen) {
-        setShowCta(true);
-        setTimeout(() => {
-          setShowCta(false);
-        }, 6000);
-      }
-    }, 3000);
-
-    return () => {
-      clearInterval(interval);
-      clearTimeout(initialTimer);
-    };
-  }, [isChatOpen]);
 
   const handleImageSelect = (e) => {
     const file = e.target.files?.[0];
@@ -127,12 +93,7 @@ function App() {
     const textContent = (textToSend || '').trim();
     if (!textContent && !imageToSend) return;
 
-    const userMsgObj = { 
-      role: 'user', 
-      content: textContent, 
-      image: imageToSend 
-    };
-
+    const userMsgObj = { role: 'user', content: textContent, image: imageToSend };
     const updatedHistory = [...chatMessages, userMsgObj];
     setChatMessages(updatedHistory);
     setChatInput('');
@@ -144,12 +105,12 @@ function App() {
     setChatMessages((prev) => [...prev, { role: 'assistant', content: '' }]);
 
     try {
-      const systemPrompt = `Eres la recepcionista virtual de la clínica BioDent en Bello, Antioquia. Tu trato debe ser EXTREMADAMENTE AMABLE, educado, cálido y servicial. Usa expresiones amables como "Con mucho gusto", "Es un placer colaborarte" y "En BioDent nos encanta cuidar tu sonrisa". Jamás menciones que eres una IA, un bot ni un modelo de lenguaje.
+      const systemPrompt = `Eres la recepcionista virtual de BioDent en Bello, Antioquia. Tu trato debe ser EXTREMADAMENTE AMABLE, educado, cálido y humano.
 
 REGLAS STRICTAS DE ÁMBITO:
-1. EXCLUSIVO A DIENTES Y SALUD DENTAL: Tu ÚNICA función es responder sobre dientes, salud oral, prótesis dentales y servicios de la clínica BioDent. Si el usuario te pregunta sobre cualquier tema que NO sea de dientes u odontología (por ejemplo: política, deportes, cocina, tecnología, chistes, cultura general, etc.), responde de forma muy dulce y educada: "Con mucho gusto te atendería, pero como recepcionista de BioDent estoy dedicada exclusivamente a consultas sobre tus dientes y tu salud oral. ¿Tienes alguna inquietud sobre tu sonrisa, prótesis o agendamiento?"
+1. ENFOQUE EXCLUSIVO EN DIENTES Y SALUD DENTAL: Tu ÚNICA función es responder sobre dientes, salud oral, prótesis dentales (flexibles, Acker, totales) y agendamientos en la clínica BioDent. Si el usuario te pregunta sobre cualquier tema ajeno a la odontología (fútbol, recetas, política, noticias, cultura general, etc.), responde muy amablemente: "Con mucho gusto te atendería, pero como recepcionista de BioDent estoy dedicada exclusivamente a consultas sobre tus dientes y tu salud oral. ¿Tienes alguna inquietud sobre tu sonrisa o prótesis?"
 2. BREVE Y CONCISO: Responde en máximo 2 a 3 frases cortas.
-3. BOTÓN DE WHATSAPP: Cuando el usuario consulte precios o quiera agendar cita, incluye la palabra WhatsApp en tu respuesta de forma natural.
+3. WHATSAPP: Cuando el usuario consulte precios o quiera agendar cita, incluye la palabra WhatsApp en tu respuesta de forma natural.
 
 Información de BioDent:
 - Especialidad: Prótesis flexibles (livianas, estéticas), prótesis totales y prótesis Acker parciales.
@@ -166,7 +127,7 @@ Información de BioDent:
             messagesToSend.push({
               role: 'user',
               content: [
-                { type: 'text', text: m.content || 'Adjunto foto dental' },
+                { type: 'text', text: m.content || 'Foto adjunta' },
                 { type: 'image_url', image_url: { url: m.image } }
               ]
             });
@@ -1070,217 +1031,251 @@ Información de BioDent:
         </div>
       </footer>
 
-      {/* Floating Chatbot Widget */}
-      <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end">
+      {/* RECREATED CHATBOT WIDGET FROM SCRATCH */}
+      <div className="fixed bottom-5 right-5 z-50 flex flex-col items-end">
         
-        {/* Automatic CTA Tooltip Bubble (Every 10 seconds) - Clicking sends the question! */}
-        {showCta && !isChatOpen && (
-          <div 
-            onClick={() => handleCtaClick(ctas[currentCtaIndex])}
-            className="mb-3 bg-[#16140F] border border-[#C9A961] text-white rounded-2xl py-3 px-4 shadow-[0_8px_30px_rgba(201,169,97,0.35),0_0_20px_rgba(0,0,0,0.9)] cursor-pointer flex items-center gap-2.5 max-w-[300px] animate-fade-in transition-all duration-300 hover:scale-105 hover:border-brand-glow group select-none relative z-10"
-          >
-            <span className="text-xs font-semibold leading-snug text-brand-white group-hover:text-brand-gold transition-colors">
-              {ctas[currentCtaIndex]}
-            </span>
-            <button 
-              onClick={(e) => {
-                e.stopPropagation();
-                setShowCta(false);
-              }}
-              className="text-brand-secondary hover:text-white text-base font-bold ml-1 p-0.5 shrink-0"
-              aria-label="Cerrar aviso"
-            >
-              &times;
-            </button>
-          </div>
-        )}
-
-        {/* Chat window panel - ORIGINAL Sleek Dark Design */}
+        {/* Chat Window Modal */}
         {isChatOpen && (
-          <div className="w-[calc(100vw-2rem)] sm:w-[360px] h-[500px] max-h-[80vh] bg-[#0A0A0A] border border-[#C9A961]/40 rounded-2xl shadow-2xl flex flex-col overflow-hidden mb-4 relative z-50">
+          <div className="w-[calc(100vw-2rem)] sm:w-[370px] h-[490px] max-h-[78vh] bg-[#121214] border border-[#C9A961]/40 rounded-2xl shadow-2xl flex flex-col overflow-hidden mb-3 relative z-50 animate-fade-in">
             
-            {/* Header */}
-            <div className="bg-[#111111] border-b border-[#C9A961]/20 p-4 flex justify-between items-center">
+            {/* Header Bar */}
+            <div className="bg-[#1C1C20] border-b border-[#C9A961]/25 px-4 py-3 flex justify-between items-center shrink-0">
               <div className="flex items-center gap-2.5">
-                <img src={biodentLogoImg} alt="BioDent Mini Logo" className="w-7 h-7 rounded-full border border-brand-gold/30 object-contain" />
+                <img src={biodentLogoImg} alt="BioDent Mini Logo" className="w-7 h-7 rounded-full border border-brand-gold/40 object-contain" />
                 <div>
-                  <h4 className="font-heading text-xs font-bold text-brand-white tracking-widest uppercase">Atención BioDent</h4>
-                  <span className="text-[9px] text-brand-gold tracking-wider uppercase font-semibold">● En línea</span>
+                  <h4 className="font-heading text-xs font-bold text-white tracking-widest uppercase">BioDent Asistente</h4>
+                  <span className="text-[9px] text-emerald-400 tracking-wider uppercase font-semibold flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                    En línea
+                  </span>
                 </div>
               </div>
-              <div className="flex items-center gap-1.5">
-                <button 
-                  onClick={clearChatHistory}
-                  className="text-brand-secondary hover:text-red-400 text-xs transition-colors p-1.5 rounded-lg border border-transparent hover:border-red-400/20"
-                  title="Nueva conversación / Limpiar historial"
+
+              {/* Action Buttons: History, Clear, Close */}
+              <div className="flex items-center gap-1 text-[#8A8577]">
+                
+                {/* History Drawer Toggle Button */}
+                <button
+                  type="button"
+                  onClick={() => setShowHistoryModal(!showHistoryModal)}
+                  className={`p-1.5 rounded-lg transition-colors hover:text-white ${showHistoryModal ? 'bg-[#C9A961]/20 text-[#C9A961]' : ''}`}
+                  title="Ver Historial / Caché"
                 >
-                  <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
+                  <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                    <path d="M13 3a9 9 0 0 0-9 9H1l3.89 3.89.07.14L9 12H6a7 7 0 1 1 7 7 6.97 6.97 0 0 1-5-2.14l-1.42 1.42A8.95 8.95 0 0 0 13 21a9 9 0 0 0 0-18zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z" />
+                  </svg>
+                </button>
+
+                {/* Clear Chat Button */}
+                <button 
+                  type="button"
+                  onClick={clearChatHistory}
+                  className="p-1.5 rounded-lg transition-colors hover:text-red-400"
+                  title="Borrar conversación actual"
+                >
+                  <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
                     <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" />
                   </svg>
                 </button>
+
+                {/* Close Button */}
                 <button 
-                  onClick={() => setIsChatOpen(false)}
-                  className="text-brand-secondary hover:text-brand-white text-lg transition-colors p-1"
-                  aria-label="Cerrar asistente"
+                  type="button"
+                  onClick={() => { setIsChatOpen(false); setShowHistoryModal(false); }}
+                  className="p-1.5 text-lg transition-colors hover:text-white leading-none"
+                  aria-label="Cerrar ventana de chat"
                 >
                   &times;
                 </button>
               </div>
             </div>
 
-            {/* Messages Body - Original Dark */}
-            <div 
-              ref={messagesContainerRef}
-              className="flex-grow p-4 overflow-y-auto space-y-4 scrollbar-thin scrollbar-thumb-brand-gold/25 scrollbar-track-transparent bg-[#0A0A0A] overscroll-contain"
-            >
-              {chatMessages.map((m, idx) => (
-                <div 
-                  key={idx} 
-                  className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}
-                >
-                  <div 
-                    className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-xs leading-relaxed ${
-                      m.role === 'user' 
-                        ? 'bg-[#C9A961] text-[#0A0A0A] font-semibold rounded-tr-none' 
-                        : 'bg-[#1A1A1A] text-brand-white rounded-tl-none border border-[#C9A961]/20'
-                    }`}
-                  >
-                    {m.image && (
-                      <img 
-                        src={m.image} 
-                        alt="Foto adjunta" 
-                        className="w-44 h-auto max-h-44 object-cover rounded-xl mb-2 border border-brand-gold/40 shadow-md" 
-                      />
-                    )}
-                    {m.content ? (
-                      renderMessageContent(m.content, m.role)
-                    ) : (m.role === 'assistant' && isChatLoading && idx === chatMessages.length - 1 ? (
-                      <span className="animate-pulse text-brand-gold font-medium">Escribiendo...</span>
-                    ) : '')}
+            {/* History Panel Overlay */}
+            {showHistoryModal ? (
+              <div className="flex-grow p-4 bg-[#18181C] text-white flex flex-col justify-between overflow-y-auto">
+                <div>
+                  <div className="flex items-center justify-between pb-3 border-b border-[#C9A961]/20 mb-3">
+                    <h5 className="text-xs font-bold text-brand-gold uppercase tracking-wider flex items-center gap-1.5">
+                      <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                        <path d="M13 3a9 9 0 0 0-9 9H1l3.89 3.89.07.14L9 12H6a7 7 0 1 1 7 7 6.97 6.97 0 0 1-5-2.14l-1.42 1.42A8.95 8.95 0 0 0 13 21a9 9 0 0 0 0-18zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z" />
+                      </svg>
+                      Historial en Memoria
+                    </h5>
+                    <span className="text-[10px] text-gray-400 font-mono">{chatMessages.length} mensajes</span>
+                  </div>
+
+                  <p className="text-[11px] text-gray-300 leading-relaxed mb-4">
+                    Tu historial de conversación se guarda en la memoria de tu navegador de forma segura.
+                  </p>
+
+                  <div className="space-y-2 max-h-[260px] overflow-y-auto pr-1">
+                    {chatMessages.map((m, i) => (
+                      <div key={i} className="text-[11px] p-2.5 rounded-lg bg-[#222228] border border-white/5">
+                        <span className={`font-bold ${m.role === 'user' ? 'text-brand-gold' : 'text-emerald-400'}`}>
+                          {m.role === 'user' ? 'Tú: ' : 'BioDent: '}
+                        </span>
+                        <span className="text-gray-200">
+                          {m.content?.slice(0, 75)}{m.content?.length > 75 ? '...' : ''}
+                        </span>
+                      </div>
+                    ))}
                   </div>
                 </div>
-              ))}
-            </div>
 
-            {/* Input Footer */}
-            <form onSubmit={handleSendMessage} className="p-3 border-t border-[#C9A961]/20 bg-[#111111] flex flex-col gap-2">
-              
-              {/* Selected Image Thumbnail Preview */}
-              {selectedImage && (
-                <div className="relative inline-block self-start mb-1">
-                  <img src={selectedImage} alt="Vista previa dental" className="w-14 h-14 object-cover rounded-lg border border-brand-gold/50" />
+                <div className="pt-3 border-t border-[#C9A961]/20 flex gap-2">
                   <button
                     type="button"
-                    onClick={removeSelectedImage}
-                    className="absolute -top-1.5 -right-1.5 bg-red-600 text-white rounded-full w-4 h-4 flex items-center justify-center text-[10px] font-bold hover:bg-red-700"
-                    title="Quitar foto"
+                    onClick={() => setShowHistoryModal(false)}
+                    className="flex-1 py-2 px-3 bg-[#2A2A32] text-white rounded-xl text-xs font-semibold hover:bg-[#33333E] transition-colors"
                   >
-                    &times;
+                    Volver al chat
+                  </button>
+                  <button
+                    type="button"
+                    onClick={clearChatHistory}
+                    className="py-2 px-3 bg-red-600/80 text-white rounded-xl text-xs font-semibold hover:bg-red-600 transition-colors flex items-center gap-1"
+                  >
+                    🗑️ Borrar
                   </button>
                 </div>
-              )}
-
-              <div className="flex gap-2 items-center">
-                {/* File input for photos */}
-                <input 
-                  type="file" 
-                  ref={fileInputRef} 
-                  accept="image/*" 
-                  onChange={handleImageSelect} 
-                  className="hidden" 
-                />
-                
-                {/* Attachment Clip Button */}
-                <button
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={isChatLoading}
-                  className={`w-9 h-9 rounded-xl bg-[#1A1A1A] border ${selectedImage ? 'border-brand-gold text-brand-gold' : 'border-[#C9A961]/30 text-brand-secondary'} flex items-center justify-center shrink-0 hover:text-brand-gold hover:border-brand-gold disabled:opacity-50 transition-colors`}
-                  title="Adjuntar foto de mis dientes"
-                >
-                  <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
-                    <path d="M16.5 6v11.5c0 2.21-1.79 4-4 4s-4-1.79-4-4V5c0-1.38 1.12-2.5 2.5-2.5s2.5 1.12 2.5 2.5v10.5c0 .55-.45 1-1 1s-1-.45-1-1V6H10v9.5c0 1.38 1.12 2.5 2.5 2.5s2.5-1.12 2.5-2.5V5c0-2.21-1.79-4-4-4S7 2.79 7 5v12.5c0 3.04 2.46 5.5 5.5 5.5s5.5-2.46 5.5-5.5V6h-1.5z" />
-                  </svg>
-                </button>
-
-                <input 
-                  type="text" 
-                  value={chatInput}
-                  onChange={(e) => setChatInput(e.target.value)}
-                  placeholder={selectedImage ? "Pregunta algo sobre la foto..." : "Escribe tu mensaje aquí..."}
-                  disabled={isChatLoading}
-                  className="flex-grow bg-[#1A1A1A] border border-[#C9A961]/30 rounded-xl px-3.5 py-2 text-xs text-brand-white focus:outline-none focus:border-brand-gold disabled:opacity-50 transition-colors"
-                />
-                <button 
-                  type="submit"
-                  disabled={isChatLoading || (!chatInput.trim() && !selectedImage)}
-                  className="w-9 h-9 rounded-xl bg-brand-gold text-[#0A0A0A] flex items-center justify-center shrink-0 hover:bg-brand-glow disabled:opacity-50 transition-colors font-bold"
-                  aria-label="Enviar mensaje"
-                >
-                  <svg className="w-4 h-4 fill-current transform rotate-45" viewBox="0 0 24 24">
-                    <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
-                  </svg>
-                </button>
               </div>
-            </form>
+            ) : (
+              <>
+                {/* Chat Messages Container */}
+                <div 
+                  ref={messagesContainerRef}
+                  className="flex-grow p-3.5 overflow-y-auto space-y-3.5 bg-[#0A0A0C] overscroll-contain"
+                >
+                  {chatMessages.map((m, idx) => (
+                    <div 
+                      key={idx} 
+                      className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                    >
+                      <div 
+                        className={`max-w-[85%] rounded-2xl px-3.5 py-2.5 text-xs leading-relaxed ${
+                          m.role === 'user' 
+                            ? 'bg-gradient-to-r from-[#C9A961] to-[#E8C878] text-[#121214] font-semibold rounded-tr-none shadow-md' 
+                            : 'bg-[#1C1C22] text-[#F5F0E8] rounded-tl-none border border-[#C9A961]/25 shadow-sm'
+                        }`}
+                      >
+                        {m.image && (
+                          <img 
+                            src={m.image} 
+                            alt="Foto adjunta" 
+                            className="w-44 h-auto max-h-44 object-cover rounded-xl mb-2 border border-brand-gold/40 shadow-md" 
+                          />
+                        )}
+                        {m.content ? (
+                          renderMessageContent(m.content, m.role)
+                        ) : (m.role === 'assistant' && isChatLoading && idx === chatMessages.length - 1 ? (
+                          <span className="animate-pulse text-brand-gold font-medium">Escribiendo...</span>
+                        ) : '')}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Footer Input Area */}
+                <form onSubmit={handleSendMessage} className="p-3 border-t border-[#C9A961]/25 bg-[#17171C] flex flex-col gap-2 shrink-0">
+                  
+                  {/* Selected Image Thumbnail Preview */}
+                  {selectedImage && (
+                    <div className="relative inline-block self-start">
+                      <img src={selectedImage} alt="Foto seleccionada" className="w-12 h-12 object-cover rounded-lg border border-brand-gold/60" />
+                      <button
+                        type="button"
+                        onClick={removeSelectedImage}
+                        className="absolute -top-1.5 -right-1.5 bg-red-600 text-white rounded-full w-4 h-4 flex items-center justify-center text-[10px] font-bold shadow-md hover:bg-red-700"
+                        title="Eliminar foto"
+                      >
+                        &times;
+                      </button>
+                    </div>
+                  )}
+
+                  <div className="flex gap-2 items-center">
+                    <input 
+                      type="file" 
+                      ref={fileInputRef} 
+                      accept="image/*" 
+                      onChange={handleImageSelect} 
+                      className="hidden" 
+                    />
+                    
+                    {/* Attach Image Clip Button */}
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={isChatLoading}
+                      className={`w-9 h-9 rounded-xl bg-[#22222A] border ${selectedImage ? 'border-brand-gold text-brand-gold' : 'border-[#C9A961]/30 text-gray-400'} flex items-center justify-center shrink-0 hover:text-brand-gold hover:border-brand-gold disabled:opacity-50 transition-colors`}
+                      title="Adjuntar foto de mis dientes"
+                    >
+                      <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                        <path d="M16.5 6v11.5c0 2.21-1.79 4-4 4s-4-1.79-4-4V5c0-1.38 1.12-2.5 2.5-2.5s2.5 1.12 2.5 2.5v10.5c0 .55-.45 1-1 1s-1-.45-1-1V6H10v9.5c0 1.38 1.12 2.5 2.5 2.5s2.5-1.12 2.5-2.5V5c0-2.21-1.79-4-4-4S7 2.79 7 5v12.5c0 3.04 2.46 5.5 5.5 5.5s5.5-2.46 5.5-5.5V6h-1.5z" />
+                      </svg>
+                    </button>
+
+                    {/* Text Input */}
+                    <input 
+                      type="text" 
+                      value={chatInput}
+                      onChange={(e) => setChatInput(e.target.value)}
+                      placeholder={selectedImage ? "Describe la foto o pregunta..." : "Pregunta sobre tus dientes..."}
+                      disabled={isChatLoading}
+                      className="flex-grow bg-[#22222A] border border-[#C9A961]/30 rounded-xl px-3.5 py-2 text-xs text-white placeholder-gray-400 focus:outline-none focus:border-brand-gold disabled:opacity-50 transition-colors"
+                    />
+
+                    {/* Submit Button */}
+                    <button 
+                      type="submit"
+                      disabled={isChatLoading || (!chatInput.trim() && !selectedImage)}
+                      className="w-9 h-9 rounded-xl bg-brand-gold text-[#121214] flex items-center justify-center shrink-0 hover:bg-brand-glow disabled:opacity-40 transition-colors font-bold shadow-md"
+                      aria-label="Enviar mensaje"
+                    >
+                      <svg className="w-4 h-4 fill-current transform rotate-45" viewBox="0 0 24 24">
+                        <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
+                      </svg>
+                    </button>
+                  </div>
+                </form>
+              </>
+            )}
 
           </div>
         )}
 
-        {/* HIGH VISIBILITY Floating Custom Tooth Button */}
-        <div className="relative flex items-center gap-3">
+        {/* Floating Tooth Button Trigger */}
+        <div className="relative flex items-center gap-2.5">
           
-          {/* Permanent Floating Gold Label when chat is closed and popups are not active */}
-          {!isChatOpen && !showCta && (
+          {/* Label Pill when chat is closed */}
+          {!isChatOpen && (
             <button
               onClick={() => setIsChatOpen(true)}
-              className="bg-[#16140F] border border-[#C9A961] text-brand-gold px-3.5 py-1.5 rounded-full text-xs font-bold tracking-wide shadow-[0_4px_15px_rgba(201,169,97,0.3)] hover:scale-105 transition-all flex items-center gap-1.5 cursor-pointer animate-fade-in"
+              className="bg-[#16140F] border border-[#C9A961] text-brand-gold px-3.5 py-1.5 rounded-full text-xs font-bold tracking-wide shadow-lg hover:scale-105 transition-all flex items-center gap-1.5 cursor-pointer animate-fade-in"
             >
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
               <span>¿Dudas con tus dientes?</span>
             </button>
           )}
 
-          {/* Button Container with Radar Ripple Effect */}
+          {/* Golden Tooth Circular Button */}
           <div className="relative">
-            {/* Outer Glowing Golden Radar Rings */}
             {!isChatOpen && (
-              <>
-                <div className="absolute inset-0 rounded-full border-2 border-brand-gold opacity-75 animate-radar-ripple pointer-events-none"></div>
-                <div className="absolute inset-0 rounded-full bg-brand-gold/25 blur-md animate-pulse pointer-events-none"></div>
-              </>
+              <div className="absolute inset-0 rounded-full border-2 border-brand-gold opacity-70 animate-radar-ripple pointer-events-none"></div>
             )}
-
-            {/* Notification Badge */}
-            {!isChatOpen && (
-              <span className="absolute -top-1 -right-1 z-20 w-5 h-5 bg-gradient-to-r from-amber-500 to-yellow-400 text-black text-[10px] font-black rounded-full flex items-center justify-center shadow-lg border border-black animate-bounce">
-                1
-              </span>
-            )}
-
             <button 
               onClick={() => setIsChatOpen(!isChatOpen)}
-              className="w-[62px] h-[62px] rounded-full bg-[#0A0A0A] border-2 border-[#C9A961] flex items-center justify-center shadow-[0_0_25px_rgba(201,169,97,0.55)] hover:shadow-[0_0_35px_rgba(201,169,97,0.9)] hover:scale-110 active:scale-95 transition-all duration-300 group shrink-0 relative z-10 cursor-pointer"
+              className="w-14 h-14 rounded-full bg-[#121214] border-2 border-[#C9A961] flex items-center justify-center shadow-[0_0_20px_rgba(201,169,97,0.5)] hover:scale-105 active:scale-95 transition-all duration-300 group shrink-0 relative z-10 cursor-pointer"
               aria-label="Abrir asistente de chat"
             >
-              {/* Custom SVG: Tooth in gold + Robot face */}
-              <svg className="w-9 h-9 text-[#C9A961] transition-transform group-hover:rotate-12" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-                {/* Tooth Outline */}
+              <svg className="w-8 h-8 text-[#C9A961] transition-transform group-hover:rotate-12" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M16 4.5C11.5 4.5 8 7 8 11.5C8 15.5 9.5 19.5 11.5 24.5C12.3 26.5 13.5 28 14.5 28C15.3 28 15.6 26.5 16 25C16.4 26.5 16.7 28 17.5 28C18.5 28 19.7 26.5 20.5 24.5C22.5 19.5 24 15.5 24 11.5C24 7 20.5 4.5 16 4.5Z" 
                       stroke="#C9A961" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" fill="none" />
-                
-                {/* Antenna */}
                 <line x1="16" y1="7" x2="16" y2="9.5" stroke="#C9A961" strokeWidth="1.5" strokeLinecap="round" />
                 <circle cx="16" cy="6.2" r="1.1" fill="#C9A961" />
-                
-                {/* Robot Head Box */}
-                <rect x="11.5" y="9.5" width="9" height="7" rx="1.5" stroke="#C9A961" strokeWidth="1.5" fill="#0A0A0A" />
-                
-                {/* Square Eyes */}
+                <rect x="11.5" y="9.5" width="9" height="7" rx="1.5" stroke="#C9A961" strokeWidth="1.5" fill="#121214" />
                 <rect x="13.2" y="11.8" width="1.8" height="1.8" fill="#C9A961" rx="0.3" />
                 <rect x="17" y="11.8" width="1.8" height="1.8" fill="#C9A961" rx="0.3" />
-                
-                {/* Robot Mouth */}
                 <path d="M14 15H18" stroke="#C9A961" strokeWidth="1.2" strokeLinecap="round" />
               </svg>
             </button>
