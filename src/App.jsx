@@ -688,34 +688,24 @@ Responde siempre en español, de forma cálida, breve y profesional. No inventes
           <div className="h-[1px] w-20 bg-brand-gold mt-6 mx-auto"></div>
         </div>
 
-        {/* Side-by-Side Static Images */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-2 max-w-4xl mx-auto rounded-2xl overflow-hidden border border-brand-gold/25 shadow-2xl relative">
-          {/* Before Image */}
-          <div className="relative aspect-[4/3] bg-[#151515]">
-            <img 
-              src={beautifulSmileImg} 
-              alt="Antes de Prótesis Dental" 
-              className="absolute inset-0 w-full h-full object-cover filter contrast-[1.03] brightness-[0.95]" 
-            />
-            <div className="absolute top-4 left-4 z-20 bg-brand-bg/85 border border-brand-gold/25 text-brand-gold font-heading text-[10px] tracking-widest uppercase font-bold py-1 px-3.5 rounded-full">
-              Estado Inicial (Antes)
-            </div>
+        {/* Single Split Image Showcase */}
+        <div className="relative max-w-3xl mx-auto rounded-2xl overflow-hidden border border-brand-gold/30 shadow-2xl bg-black/40 group">
+          {/* Badge Left (Before) */}
+          <div className="absolute top-4 left-4 z-20 bg-[#0A0A0A]/90 border border-brand-gold/30 text-brand-gold font-heading text-[10px] sm:text-xs tracking-widest uppercase font-bold py-1.5 px-4 rounded-full shadow-lg backdrop-blur-sm">
+            Estado Inicial (Antes)
           </div>
 
-          {/* Central Vertical Gold Divider (Static) */}
-          <div className="hidden md:block absolute top-0 bottom-0 left-1/2 w-[1px] bg-brand-gold/60 z-30 transform -translate-x-1/2"></div>
-
-          {/* After Image */}
-          <div className="relative aspect-[4/3] bg-[#151515]">
-            <img 
-              src={beautifulSmileImg} 
-              alt="Después de Prótesis Dental" 
-              className="absolute inset-0 w-full h-full object-cover filter contrast-[1.03] brightness-[0.95]" 
-            />
-            <div className="absolute top-4 right-4 z-20 bg-brand-gold text-[#0A0A0A] font-heading text-[10px] tracking-widest uppercase font-bold py-1 px-3.5 rounded-full">
-              Resultado Final (Después)
-            </div>
+          {/* Badge Right (After) */}
+          <div className="absolute top-4 right-4 z-20 bg-brand-gold text-[#0A0A0A] font-heading text-[10px] sm:text-xs tracking-widest uppercase font-bold py-1.5 px-4 rounded-full shadow-lg">
+            Resultado Final (Después)
           </div>
+
+          {/* Single Image displaying both Before (left) and After (right) */}
+          <img 
+            src={beautifulSmileImg} 
+            alt="Caso Clínico Antes y Después BioDent" 
+            className="w-full h-auto object-cover rounded-xl filter contrast-[1.03]" 
+          />
         </div>
       </section>
 
