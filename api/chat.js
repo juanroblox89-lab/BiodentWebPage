@@ -23,7 +23,7 @@ export default async function handler(req, res) {
     return res.status(200).json({
       choices: [{
         message: {
-          content: '⚠️ La variable NVIDIA_API_KEY no está configurada en Vercel. Por favor agrégala en Settings -> Environment Variables y presiona "Redeploy".'
+          content: 'Disculpa, el sistema está en mantenimiento. Puedes escribirnos directamente por WhatsApp. [BOTON_WHATSAPP]'
         }
       }]
     });
@@ -38,10 +38,10 @@ export default async function handler(req, res) {
       Array.isArray(m.content) && m.content.some(c => c.type === 'image_url')
     );
 
-    // Prioritize Nemotron and Vision models
+    // Ultra-fast model priority for sub-2-second responses
     const candidateModels = hasImage 
-      ? ['meta/llama-3.2-11b-vision-instruct', 'meta/llama-3.2-90b-vision-instruct', 'nvidia/neva-22b']
-      : ['nvidia/llama-3.1-nemotron-70b-instruct', 'meta/llama-3.3-70b-instruct', 'meta/llama-3.1-8b-instruct'];
+      ? ['meta/llama-3.2-11b-vision-instruct', 'meta/llama-3.2-90b-vision-instruct']
+      : ['meta/llama-3.1-8b-instruct', 'nvidia/llama-3.1-nemotron-70b-instruct', 'meta/llama-3.3-70b-instruct'];
 
     if (stream) {
       res.setHeader('Content-Type', 'text/event-stream');
@@ -62,8 +62,8 @@ export default async function handler(req, res) {
             body: JSON.stringify({
               model: model,
               messages: messages || [],
-              temperature: 0.7,
-              max_tokens: 400,
+              temperature: 0.4,
+              max_tokens: 120,
               stream: true
             })
           });
@@ -80,7 +80,7 @@ export default async function handler(req, res) {
       }
 
       if (!response || !response.ok) {
-        const errorMsg = `data: ${JSON.stringify({ choices: [{ delta: { content: `⚠️ Error al conectar con la API de NVIDIA (${lastErr || 'Error de conexión'}).` } }] })}\n\ndata: [DONE]\n\n`;
+        const errorMsg = `data: ${JSON.stringify({ choices: [{ delta: { content: `Para una atención inmediata, escrébenos por WhatsApp. [BOTON_WHATSAPP]` } }] })}\n\ndata: [DONE]\n\n`;
         res.write(errorMsg);
         return res.end();
       }
@@ -97,7 +97,6 @@ export default async function handler(req, res) {
 
       return res.end();
     } else {
-      // Non-stream response fallback
       let data = null;
       for (const model of candidateModels) {
         try {
@@ -110,8 +109,8 @@ export default async function handler(req, res) {
             body: JSON.stringify({
               model: model,
               messages: messages || [],
-              temperature: 0.7,
-              max_tokens: 400
+              temperature: 0.4,
+              max_tokens: 120
             })
           });
           if (resp.ok) {
@@ -122,7 +121,7 @@ export default async function handler(req, res) {
           console.warn(`Fetch failed for ${model}:`, err.message);
         }
       }
-      return res.status(200).json(data || { choices: [{ message: { content: 'No se obtuvo respuesta.' } }] });
+      return res.status(200).json(data || { choices: [{ message: { content: 'Para una atención inmediata, escrébenos por WhatsApp. [BOTON_WHATSAPP]' } }] });
     }
 
   } catch (error) {
@@ -130,7 +129,7 @@ export default async function handler(req, res) {
     if (!res.headersSent) {
       return res.status(500).json({ error: error.message || 'Internal Server Error' });
     } else {
-      res.write(`data: ${JSON.stringify({ choices: [{ delta: { content: ` ⚠️ Error: ${error.message}` } }] })}\n\ndata: [DONE]\n\n`);
+      res.write(`data: ${JSON.stringify({ choices: [{ delta: { content: ` Escríbenos directamente por WhatsApp. [BOTON_WHATSAPP]` } }] })}\n\ndata: [DONE]\n\n`);
       return res.end();
     }
   }

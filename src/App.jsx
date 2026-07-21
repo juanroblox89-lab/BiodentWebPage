@@ -15,7 +15,7 @@ function App() {
   const fileInputRef = useRef(null);
 
   const [chatMessages, setChatMessages] = useState([
-    { role: 'assistant', content: 'Hola 👋 Soy el asistente virtual de BioDent (potenciado por Nemotron 30B). ¿En qué puedo ayudarte hoy? Si deseas, ¡también puedes adjuntarme una foto de tus dientes para darte una orientación inicial!' }
+    { role: 'assistant', content: 'Hola, bienvenido a BioDent. ¿En qué te podemos colaborar hoy? Si deseas, también puedes adjuntar una foto de tus dientes para darte una apreciación inicial.' }
   ]);
   const [isChatLoading, setIsChatLoading] = useState(false);
   const chatEndRef = useRef(null);
@@ -110,22 +110,18 @@ function App() {
     setChatMessages((prev) => [...prev, { role: 'assistant', content: '' }]);
 
     try {
-      const systemPrompt = `Eres el asistente virtual con IA de BioDent, clínica odontológica especializada en prótesis dentales ubicada cerca al Parque Principal de Bello, Antioquia. 
-Tu función es responder preguntas sobre los tratamientos, precios orientativos y analizar amablemente fotos dentales si el usuario adjunta una.
+      const systemPrompt = `Eres la recepcionista de la clínica odontológica BioDent en Bello, Antioquia (cerca al Parque Principal). Tu trato es muy humano, amable, fluido y profesional. Jamás menciones que eres una IA, un bot ni un modelo de lenguaje.
 
-Servicios principales:
-- Prótesis Flexible: liviana, estética, sin ganchos metálicos visibles.
-- Prótesis Total: restaura dentadura completa.
-- Prótesis Acker: parcial, cómoda y discreta.
+REGLAS OBLIGATORIAS:
+1. ÁMBITO EXCLUSIVO ODONTOLÓGICO: Tu ÚNICA función es responder consultas sobre odontología, salud oral, prótesis dentales y servicios de BioDent. Si el usuario te pregunta por cualquier tema ajeno a la odontología (deportes, política, cocina, tecnología, chistes, etc.), responde amablemente: "Disculpa, como recepcionista de BioDent solo puedo orientarte sobre odontología y nuestros servicios dentales. ¿En qué te podemos colaborar con tus dientes o prótesis?"
+2. CONCISIÓN Y VELOCIDAD: Responde de forma MUY BREVE, directa y clara en máximo 2 a 3 frases cortas.
+3. SIN EMOJIS EXCESIVOS: Usa máximo 1 emoji por mensaje o ninguno.
+4. BOTÓN DE WHATSAPP: Cuando sugieras agendar o cotizar, incluye la palabra WhatsApp en tu respuesta (sin escribir enlaces largos ni URLs).
 
-Instrucciones si el usuario envía una foto de sus dientes:
-1. Brinda una apreciación visual respetuosa, cálida y positiva.
-2. Aclara amablemente que es una opinión técnica preliminar y orientativa.
-3. Recomienda agendar una valoración presencial en la clínica para un diagnóstico profesional definitivo.
-
-Cuando el usuario pida agendar o cotizar exacto, dale este enlace de WhatsApp: https://wa.me/573114345328
-
-Responde siempre en español, de forma cálida, fluida, concisa y profesional.`;
+Información de BioDent:
+- Tratamientos: Prótesis flexibles (livianas, estéticas), totales y Acker parciales.
+- Ubicación: Cerca al Parque Principal de Bello, Antioquia.
+- Horarios: Lunes a Viernes 9am - 6pm | Sábados 9am - 1pm.`;
 
       const messagesToSend = [{ role: 'system', content: systemPrompt }];
 
@@ -250,6 +246,38 @@ Responde siempre en español, de forma cálida, fluida, concisa y profesional.`;
     setShowCta(false);
     const cleanQuestion = ctaText.replace(/^[^\wáéíóúñÁÉÍÓÚÑ¿?]+/, '').trim();
     processChatMessage(cleanQuestion, null);
+  };
+
+  const renderMessageContent = (content, role) => {
+    if (!content) return null;
+
+    const lower = content.toLowerCase();
+    const hasWhatsapp = content.includes('[BOTON_WHATSAPP]') || content.includes('https://wa.me/') || lower.includes('whatsapp');
+
+    let cleanText = content
+      .replace(/https?:\/\/wa\.me\/[^\s)]+/g, '')
+      .replace(/\[BOTON_WHATSAPP\]/g, '')
+      .replace(/\[WhatsApp\]/g, '')
+      .trim();
+
+    return (
+      <div className="space-y-2">
+        {cleanText && <div>{cleanText}</div>}
+        {hasWhatsapp && role === 'assistant' && (
+          <a
+            href="https://wa.me/573114345328"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-2.5 inline-flex items-center justify-center gap-2 px-3.5 py-2 rounded-xl bg-[#25D366] text-white font-bold text-xs shadow-md hover:bg-[#20bd5a] hover:scale-[1.02] transition-all w-full text-center no-underline"
+          >
+            <svg className="w-4 h-4 fill-current shrink-0" viewBox="0 0 24 24">
+              <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.514 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.724-1.455L0 24zm6.59-4.846c1.62.962 3.21 1.493 4.904 1.496 5.434.004 9.859-4.417 9.862-9.857.002-2.636-1.023-5.11-2.884-6.974C16.672 1.955 14.195.932 11.56.932c-5.443 0-9.87 4.42-9.873 9.861-.001 1.776.479 3.51 1.39 5.048l-.946 3.453 3.536-.93c1.558.847 3.11 1.29 4.39 1.29z" />
+            </svg>
+            Contactar por WhatsApp
+          </a>
+        )}
+      </div>
+    );
   };
 
   const getWhatsAppLink = (text) => {
@@ -1043,8 +1071,8 @@ Responde siempre en español, de forma cálida, fluida, concisa y profesional.`;
               <div className="flex items-center gap-2.5">
                 <img src={biodentLogoImg} alt="BioDent Mini Logo" className="w-7 h-7 rounded-full border border-brand-gold/30 object-contain" />
                 <div>
-                  <h4 className="font-heading text-xs font-bold text-brand-white tracking-widest uppercase">Asistente Nemotron 30B</h4>
-                  <span className="text-[9px] text-brand-gold tracking-wider uppercase font-semibold">● En vivo (Streaming)</span>
+                  <h4 className="font-heading text-xs font-bold text-brand-white tracking-widest uppercase">Atención BioDent</h4>
+                  <span className="text-[9px] text-brand-gold tracking-wider uppercase font-semibold">● En línea</span>
                 </div>
               </div>
               <button 
@@ -1077,8 +1105,10 @@ Responde siempre en español, de forma cálida, fluida, concisa y profesional.`;
                         className="w-44 h-auto max-h-44 object-cover rounded-xl mb-2 border border-brand-gold/40 shadow-md" 
                       />
                     )}
-                    {m.content || (m.role === 'assistant' && isChatLoading && idx === chatMessages.length - 1 ? (
-                      <span className="animate-pulse text-brand-gold font-medium">Pensando y escribiendo...</span>
+                    {m.content ? (
+                      renderMessageContent(m.content, m.role)
+                    ) : (m.role === 'assistant' && isChatLoading && idx === chatMessages.length - 1 ? (
+                      <span className="animate-pulse text-brand-gold font-medium">Escribiendo...</span>
                     ) : '')}
                   </div>
                 </div>
