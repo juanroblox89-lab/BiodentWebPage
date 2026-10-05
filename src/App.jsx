@@ -6,6 +6,7 @@ import ackerProsthesisImg from './assets/acker_prosthesis.png'
 import dentalOfficeImg from './assets/dental_office.png'
 import drClaudiaImg from './assets/dr_claudia.png'
 import beautifulSmileImg from './assets/beautiful_smile.png'
+import HeroReels from './HeroReels.jsx'
 
 // Videos reales de la clínica (public/videos). Solo se descargan cuando alguien toca el play.
 const VIDEOS_CASOS = [
@@ -53,64 +54,6 @@ const SERVICIOS_EXTRA = [
     icono: 'M12 4c2.5 0 4 1.5 4 4s-.5 4-1 6.5S14 20 12 20s-3-3.5-3-5.5.5-4-1-6.5 1.5-4 4-4z',
   },
 ];
-
-// Carrusel de videos verticales: deslizable en el celular, un solo video suena a la vez.
-function CasosVideos() {
-  const [activo, setActivo] = useState(null);
-  return (
-    <div className="mt-14 text-center">
-      <span className="font-heading text-[10px] font-bold tracking-[0.25em] text-brand-gold uppercase block mb-1">
-        Casos reales
-      </span>
-      <h3 className="font-heading text-xl md:text-2xl font-bold tracking-wider text-brand-white uppercase mb-5">
-        En video
-      </h3>
-      <div className="scroll-limpio flex gap-3 overflow-x-auto snap-x snap-mandatory pb-3 -mx-6 px-6 md:mx-0 md:px-0 text-left" aria-label="Videos de casos reales">
-        {VIDEOS_CASOS.map((v) => (
-          <figure key={v.id} className="snap-center shrink-0 w-[58vw] max-w-[250px]">
-            <div className="relative aspect-[9/16] rounded-2xl overflow-hidden border border-brand-gold/20 bg-black">
-              {activo === v.id ? (
-                <video
-                  key={v.id}
-                  src={`/videos/${v.id}.mp4`}
-                  poster={`/videos/posters/${v.id}.jpg`}
-                  className="w-full h-full object-cover"
-                  controls
-                  autoPlay
-                  playsInline
-                  preload="metadata"
-                  onEnded={() => setActivo(null)}
-                />
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => setActivo(v.id)}
-                  className="group absolute inset-0 w-full h-full cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-gold"
-                  aria-label={`Reproducir video: ${v.titulo}. ${v.detalle}`}
-                >
-                  <img
-                    src={`/videos/posters/${v.id}.jpg`}
-                    alt=""
-                    loading="lazy"
-                    className="w-full h-full object-cover"
-                  />
-                  <span className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent"></span>
-                  <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-14 h-14 rounded-full bg-black/55 border border-brand-gold/60 flex items-center justify-center text-brand-gold group-hover:bg-brand-gold group-hover:text-black transition-colors">
-                    <svg className="w-6 h-6 ml-0.5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z" /></svg>
-                  </span>
-                </button>
-              )}
-            </div>
-            <figcaption className="mt-2">
-              <span className="font-heading text-[11px] font-bold tracking-wider text-brand-white uppercase block">{v.titulo}</span>
-              <span className="font-sans text-[11px] text-brand-secondary font-light block leading-snug">{v.detalle}</span>
-            </figcaption>
-          </figure>
-        ))}
-      </div>
-    </div>
-  );
-}
 
 function App() {
   // Chatbot State (Recreated From Scratch)
@@ -452,15 +395,15 @@ Información de BioDent:
       </header>
 
       {/* Hero Section with Responsive Mobile Doctor Backdrop */}
-      <section id="inicio" className="relative min-h-screen flex flex-col justify-center items-start pt-28 pb-16 px-6 md:px-16 lg:px-24 z-10">
+      <section id="inicio" className="relative min-h-screen flex flex-col justify-center items-start lg:flex-row lg:items-center lg:justify-between lg:gap-10 pt-28 pb-16 px-6 md:px-16 lg:px-24 z-10">
         
         {/* Doctor background image integration with object-top for mobile responsiveness */}
         <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden flex justify-end">
-          <div className="w-full lg:w-4/5 h-full relative">
+          <div className="w-full h-full relative lg:absolute lg:inset-y-0 lg:left-[34%] lg:right-[22%] lg:w-auto lg:[mask-image:linear-gradient(to_right,transparent,black_16%,black_84%,transparent)]">
             <img 
               src={drClaudiaImg} 
               alt="Dra. Claudia Backdrop" 
-              className="w-full h-full object-cover object-top lg:object-right opacity-75 sm:opacity-80" 
+              className="w-full h-full object-cover object-top opacity-75 sm:opacity-80 lg:opacity-70" 
             />
             {/* Dark gradient overlay to preserve quiet luxury text contrast across all screen sizes */}
             <div className="absolute inset-0 bg-gradient-to-t md:bg-gradient-to-r from-[#0A0A0A] via-[#0A0A0A]/90 lg:via-[#0A0A0A]/60 to-transparent"></div>
@@ -544,6 +487,10 @@ Información de BioDent:
             </a>
           </div>
 
+        </div>
+        {/* Videos reales de la clínica: escenario tipo reel en el hero */}
+        <div className="relative z-10 mt-8 self-center w-full max-w-[220px] lg:mt-0 lg:max-w-[290px] lg:shrink-0 lg:w-[290px]">
+          <HeroReels videos={VIDEOS_CASOS} />
         </div>
       </section>
 
@@ -984,7 +931,6 @@ Información de BioDent:
             className="w-full h-auto object-cover rounded-xl filter contrast-[1.03]" 
           />
         </div>
-        <CasosVideos />
       </section>
 
       {/* Testimonials Section (Wood Wall background cover with overlay) */}
