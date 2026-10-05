@@ -219,7 +219,7 @@ REGLAS STRICTAS DE ÁMBITO:
 
 Información de BioDent:
 - Especialidad: Prótesis flexibles (livianas, estéticas), prótesis totales y prótesis Acker parciales.
-- Ubicación: Cerca al Parque Principal de Bello, Antioquia.
+- Ubicación: Calle 50 #48-34, segundo piso, junto al Éxito del Parque de Bello, Antioquia.
 - Horarios: Lunes a Viernes 9am - 6pm | Sábados 9am - 1pm.`;
 
       const messagesToSend = [{ role: 'system', content: systemPrompt }];
@@ -483,13 +483,9 @@ Información de BioDent:
             Dra. Claudia Mabel Tapias
           </span>
           
-          {/* Brand Subtitle */}
-          <span className="font-heading text-xs tracking-[0.3em] font-medium text-brand-secondary uppercase mb-5">
-            — BIODENT —
-          </span>
-
           {/* Tagline */}
           <h1 className="font-heading text-3xl md:text-5xl lg:text-6xl font-bold tracking-wider text-brand-white uppercase leading-tight mb-6">
+            <span className="block font-heading text-xs tracking-[0.3em] font-medium text-brand-secondary uppercase mb-4">— BioDent Bello —</span>
             Tu sonrisa,<br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-gold via-brand-glow to-brand-gold">nuestra especialidad</span>
           </h1>
@@ -1092,7 +1088,7 @@ Información de BioDent:
                   <div>
                     <span className="font-heading text-[10px] font-bold tracking-wider text-brand-white uppercase block">Ubicación</span>
                     <p className="font-sans text-xs text-brand-secondary font-light">
-                      Cerca al Parque Principal de Bello, Antioquia
+                      Calle 50 #48-34, segundo piso, junto al Éxito del Parque de Bello, Antioquia
                     </p>
                   </div>
                 </div>
