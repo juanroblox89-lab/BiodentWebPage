@@ -174,3 +174,16 @@ html {
   70%, 100% { box-shadow: 0 0 0 14px rgba(201, 169, 97, 0); }
 }
 @media (prefers-reduced-motion: reduce) { .cta-valoracion::after { animation: none; } }
+
+/* Pila de hojas del hero: la de adelante sale volando y la siguiente toma su lugar */
+@keyframes hero-reels-sale {
+  from { opacity: 1; transform: translate(0, 0) rotate(0deg); }
+  to { opacity: 0; transform: translate(70%, -8%) rotate(var(--giro, 14deg)); }
+}
+.hero-reels-sale { animation: hero-reels-sale 0.55s cubic-bezier(.4, 0, .2, 1) forwards; }
+.hero-reels-hoja { transition: transform .5s ease; }
+.hero-reels-frente { transition: transform .5s ease; }
+@media (prefers-reduced-motion: reduce) {
+  .hero-reels-sale { animation: none; display: none; }
+  .hero-reels-hoja, .hero-reels-frente { transition: none; }
+}

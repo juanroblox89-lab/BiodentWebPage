@@ -6,9 +6,13 @@ import { useEffect, useRef, useState } from 'react'
 // barra de progreso dorada arriba y miniaturas debajo para saltar.
 // Solo el video ACTIVO se monta (los demás solo aportan su carátula).
 const DURACION_MS = 4500;
+// Ángulos fijos (grados) para que la pila se vea desordenada pero estable, no aleatoria en cada recarga.
+const ANGULOS = [-5, 4, -3, 6, -6, 3, -4, 5, -2];
+const DESPLAZ = [[-14, 10], [16, 14], [-10, 20], [12, 8], [-16, 16], [10, 22], [-12, 12], [14, 18], [-8, 24]];
 
 export default function HeroReels({ videos = [], ctaHref = null }) {
   const [idx, setIdx] = useState(0);
+  const [saliente, setSaliente] = useState(null); // hoja que se va volando al pasar al siguiente
   const [hover, setHover] = useState(false);
   const [foco, setFoco] = useState(false);
   const [toque, setToque] = useState(false);
@@ -53,7 +57,7 @@ export default function HeroReels({ videos = [], ctaHref = null }) {
 
   useEffect(() => {
     if (!rotar) return;
-    const t = setInterval(() => setIdx((i) => (i + 1) % total), DURACION_MS);
+    const t = setInterval(() => avanzarA(idx + 1), DURACION_MS);
     return () => clearInterval(t);
   }, [rotar, total, idx]);
 
@@ -78,12 +82,59 @@ export default function HeroReels({ videos = [], ctaHref = null }) {
   if (total === 0) return null;
   const actual = videos[idx];
   const pad = (n) => String(n).padStart(2, '0');
-  const irA = (i) => setIdx(((i % total) + total) % total);
+  function avanzarA(i) {
+    const destino = ((i % total) + total) % total;
+    if (destino === idx) return;
+    setSaliente(idx);
+    setIdx(destino);
+    setTimeout(() => setSaliente(null), 600);
+  }
+  const irA = avanzarA;
+
+  const hoja = (k) => {
+    const j = (idx + k) % total;
+    const [dx, dy] = DESPLAZ[j % DESPLAZ.length];
+    return { j, rot: ANGULOS[j % ANGULOS.length], dx, dy };
+  };
+  const atras = total > 2 ? [3, 2, 1] : total > 1 ? [1] : [];
 
   return (
     <div ref={marcoRef} className="w-full" aria-label="Videos de casos reales">
+      <div className="relative">
+        {/* Hojas de atrás: las carátulas de los siguientes videos, una encima de otra y desordenadas */}
+        {atras.map((k) => {
+          const h = hoja(k);
+          return (
+            <div
+              key={`atras-${h.j}`}
+              aria-hidden="true"
+              className="hero-reels-hoja pointer-events-none absolute inset-0 overflow-hidden rounded-[22px] border border-brand-gold/25 bg-black shadow-[0_14px_36px_rgba(0,0,0,0.55)]"
+              style={{
+                transform: `translate(${h.dx * k * 0.9}px, ${h.dy * k * 0.45}px) rotate(${h.rot * (1 + k * 0.2) * 1.4}deg) scale(${1 - k * 0.02})`,
+                zIndex: 3 - k,
+              }}
+            >
+              <img src={`/videos/posters/${videos[h.j].id}.jpg`} alt="" loading="lazy" className="h-full w-full object-cover" />
+              <div className="absolute inset-0 bg-black/30"></div>
+            </div>
+          );
+        })}
+
+        {/* La hoja que se va: sale volando hacia un lado antes de mostrar la siguiente */}
+        {saliente !== null && saliente !== idx && (
+          <div
+            key={`sale-${saliente}-${idx}`}
+            aria-hidden="true"
+            className="hero-reels-sale pointer-events-none absolute inset-0 z-20 overflow-hidden rounded-[22px] border border-brand-gold/30 bg-black shadow-[0_20px_60px_rgba(0,0,0,0.5)]"
+            style={{ '--giro': `${ANGULOS[saliente % ANGULOS.length] > 0 ? 16 : -16}deg` }}
+          >
+            <img src={`/videos/posters/${videos[saliente].id}.jpg`} alt="" className="h-full w-full object-cover" />
+          </div>
+        )}
+
       <div
-        className="relative aspect-[9/16] w-full overflow-hidden rounded-[22px] border border-brand-gold/30 bg-black shadow-[0_20px_60px_rgba(0,0,0,0.5)]"
+        className="hero-reels-frente relative z-10 aspect-[9/16] w-full overflow-hidden rounded-[22px] border border-brand-gold/40 bg-black shadow-[0_24px_60px_rgba(0,0,0,0.6)]"
+        style={{ transform: `rotate(${ANGULOS[idx % ANGULOS.length] * 0.3}deg)` }}
         onMouseEnter={() => setHover(true)}
         onMouseLeave={() => { setHover(false); setToque(false); }}
         onTouchStart={() => setToque(true)}
@@ -155,6 +206,8 @@ export default function HeroReels({ videos = [], ctaHref = null }) {
             </span>
           </div>
         </div>
+      </div>
+
       </div>
 
       {/* CTA del video que se está viendo: lleva a WhatsApp con el tratamiento ya escrito */}
