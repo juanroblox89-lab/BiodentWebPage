@@ -309,7 +309,7 @@ Información de BioDent:
           if (lastIdx >= 0 && updated[lastIdx].role === 'assistant') {
             updated[lastIdx] = { 
               role: 'assistant', 
-              content: 'Por favor escrébenos a nuestro WhatsApp para poder orientarte de inmediato: https://wa.me/573114345328' 
+              content: 'Por favor escríbenos a nuestro WhatsApp para poder orientarte de inmediato: https://wa.me/573114345328' 
             };
           }
           return updated;
