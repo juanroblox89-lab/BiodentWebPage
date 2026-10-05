@@ -7,7 +7,7 @@ import { useEffect, useRef, useState } from 'react'
 // Solo el video ACTIVO se monta (los demás solo aportan su carátula).
 const DURACION_MS = 4500;
 
-export default function HeroReels({ videos = [] }) {
+export default function HeroReels({ videos = [], ctaHref = null }) {
   const [idx, setIdx] = useState(0);
   const [hover, setHover] = useState(false);
   const [foco, setFoco] = useState(false);
@@ -156,6 +156,19 @@ export default function HeroReels({ videos = [] }) {
           </div>
         </div>
       </div>
+
+      {/* CTA del video que se está viendo: lleva a WhatsApp con el tratamiento ya escrito */}
+      {ctaHref && (
+        <a
+          href={ctaHref(actual)}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="cta-valoracion mt-3 flex w-full items-center justify-center gap-2 rounded-full bg-brand-gold px-4 py-3 font-heading text-xs font-bold uppercase tracking-wider text-[#0A0A0A] transition-colors hover:bg-brand-glow focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-gold"
+        >
+          Quiero este resultado
+          <span aria-hidden="true">&rarr;</span>
+        </a>
+      )}
 
       {/* Miniaturas para saltar de video */}
       <div className="scroll-limpio mt-3 flex gap-1.5 overflow-x-auto pb-1 lg:grid lg:grid-cols-9 lg:overflow-visible" role="group" aria-label="Elegir video">

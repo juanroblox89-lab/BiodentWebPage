@@ -399,7 +399,7 @@ Información de BioDent:
         
         {/* Doctor background image integration with object-top for mobile responsiveness */}
         <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden flex justify-end">
-          <div className="w-full h-full relative lg:absolute lg:inset-y-0 lg:left-[34%] lg:right-[22%] lg:w-auto lg:[mask-image:linear-gradient(to_right,transparent,black_16%,black_84%,transparent)]">
+          <div className="w-full h-full relative lg:absolute lg:inset-y-0 lg:left-[32%] lg:right-[28%] lg:w-auto lg:[mask-image:linear-gradient(to_right,transparent,black_16%,black_84%,transparent)]">
             <img 
               src={drClaudiaImg} 
               alt="Dra. Claudia Backdrop" 
@@ -449,7 +449,7 @@ Información de BioDent:
           <div className="flex flex-col sm:flex-row flex-wrap gap-3 items-stretch sm:items-center w-full">
             {/* WhatsApp Button */}
             <a 
-              href={getWhatsAppLink("Hola Dra. Claudia, vi su publicación y me gustaría agendar una valoración para una prótesis dental.")}
+              href={getWhatsAppLink("Hola Dra. Claudia, vi su página y quiero agendar una valoración sin costo.")}
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center justify-center gap-2.5 bg-brand-gold text-[#0A0A0A] px-6 py-3 rounded-full font-heading text-xs font-bold uppercase tracking-widest transition-all duration-300 hover:bg-brand-glow hover:shadow-[0_0_20px_rgba(232,200,120,0.4)] group"
@@ -457,7 +457,7 @@ Información de BioDent:
               <svg className="w-4 h-4 fill-current transition-transform group-hover:scale-110" viewBox="0 0 24 24">
                 <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.514 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.724-1.455L0 24zm6.59-4.846c1.62.962 3.21 1.493 4.904 1.496 5.434.004 9.859-4.417 9.862-9.857.002-2.636-1.023-5.11-2.884-6.974C16.672 1.955 14.195.932 11.56.932c-5.443 0-9.87 4.42-9.873 9.861-.001 1.776.479 3.51 1.39 5.048l-.946 3.453 3.536-.93c1.558.847 3.11 1.29 4.39 1.29zM16.59 13.9c-.277-.14-1.643-.812-1.896-.905-.254-.094-.44-.14-.623.14-.184.278-.712.905-.873 1.09-.16.185-.32.207-.597.068-.277-.14-1.17-.43-2.228-1.374-.823-.734-1.38-1.64-1.54-1.92-.162-.276-.017-.426.12-.564.125-.124.277-.323.416-.484.14-.16.184-.277.277-.463.093-.185.047-.348-.024-.486-.07-.14-.622-1.5-.853-2.053-.225-.54-.452-.467-.622-.476-.16-.008-.344-.01-.528-.01-.184 0-.485.07-.738.348-.254.278-.97.948-.97 2.31 0 1.36.99 2.68 1.127 2.866.138.186 1.948 2.973 4.72 4.17 1.102.47 1.96.75 2.628.963.69.22 1.32.19 1.81.114.55-.085 1.643-.67 1.874-1.32.23-.65.23-1.205.162-1.32-.068-.113-.253-.185-.53-.325z" />
               </svg>
-              WhatsApp de la Clínica
+              Agenda tu valoración sin costo
             </a>
 
             {/* Instagram Button */}
@@ -489,8 +489,8 @@ Información de BioDent:
 
         </div>
         {/* Videos reales de la clínica: escenario tipo reel en el hero */}
-        <div className="relative z-10 mt-8 self-center w-full max-w-[220px] lg:mt-0 lg:max-w-[290px] lg:shrink-0 lg:w-[290px]">
-          <HeroReels videos={VIDEOS_CASOS} />
+        <div className="relative z-10 mt-8 self-center w-full max-w-[300px] lg:mt-0 lg:max-w-none lg:shrink-0 lg:w-[min(360px,calc((100vh_-_290px)*0.5625))] xl:w-[min(400px,calc((100vh_-_290px)*0.5625))]">
+          <HeroReels videos={VIDEOS_CASOS} ctaHref={(v) => getWhatsAppLink(`Hola Dra. Claudia, vi el video "${v.titulo}: ${v.detalle}" en su página y quiero agendar una valoración sin costo.`)} />
         </div>
       </section>
 
@@ -632,9 +632,9 @@ Información de BioDent:
                   href={getWhatsAppLink("Hola Dra. Claudia, deseo agendar una valoración para una Prótesis Flexible.")} 
                   target="_blank" 
                   rel="noopener noreferrer" 
-                  className="font-heading text-xs font-bold uppercase tracking-wider text-brand-white hover:text-brand-gold transition-colors flex items-center gap-1.5"
+                  className="cta-valoracion inline-flex items-center gap-1.5 rounded-full bg-brand-gold px-4 py-2.5 font-heading text-[11px] font-bold uppercase tracking-wider text-[#0A0A0A] transition-colors hover:bg-brand-glow"
                 >
-                  Agendar valoración &rarr;
+                  Quiero mi valoración sin costo &rarr;
                 </a>
               </div>
             </div>
@@ -700,9 +700,9 @@ Información de BioDent:
                   href={getWhatsAppLink("Hola Dra. Claudia, deseo agendar una valoración para una Prótesis Total.")} 
                   target="_blank" 
                   rel="noopener noreferrer" 
-                  className="font-heading text-xs font-bold uppercase tracking-wider text-brand-white hover:text-brand-gold transition-colors flex items-center gap-1.5"
+                  className="cta-valoracion inline-flex items-center gap-1.5 rounded-full bg-brand-gold px-4 py-2.5 font-heading text-[11px] font-bold uppercase tracking-wider text-[#0A0A0A] transition-colors hover:bg-brand-glow"
                 >
-                  Agendar valoración &rarr;
+                  Quiero mi valoración sin costo &rarr;
                 </a>
               </div>
             </div>
@@ -768,9 +768,9 @@ Información de BioDent:
                   href={getWhatsAppLink("Hola Dra. Claudia, deseo agendar una valoración para una Prótesis Acker.")} 
                   target="_blank" 
                   rel="noopener noreferrer" 
-                  className="font-heading text-xs font-bold uppercase tracking-wider text-brand-white hover:text-brand-gold transition-colors flex items-center gap-1.5"
+                  className="cta-valoracion inline-flex items-center gap-1.5 rounded-full bg-brand-gold px-4 py-2.5 font-heading text-[11px] font-bold uppercase tracking-wider text-[#0A0A0A] transition-colors hover:bg-brand-glow"
                 >
-                  Agendar valoración &rarr;
+                  Quiero mi valoración sin costo &rarr;
                 </a>
               </div>
             </div>
@@ -805,9 +805,9 @@ Información de BioDent:
                   href={getWhatsAppLink(`Hola Dra. Claudia, deseo agendar una valoración para ${s.mensaje}.`)}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="font-heading text-xs font-bold uppercase tracking-wider text-brand-gold hover:text-brand-white transition-colors"
+                  className="cta-valoracion inline-flex w-full items-center justify-center gap-1.5 rounded-full bg-brand-gold px-4 py-2.5 font-heading text-[11px] font-bold uppercase tracking-wider text-[#0A0A0A] transition-colors hover:bg-brand-glow"
                 >
-                  Agendar valoración &rarr;
+                  Quiero mi valoración sin costo &rarr;
                 </a>
               </article>
             ))}
