@@ -134,6 +134,10 @@ html {
   scroll-behavior: smooth;
 }
 
+/* Carruseles deslizables sin barra visible */
+.scroll-limpio { scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+.scroll-limpio::-webkit-scrollbar { display: none; }
+
 /* Remove default styles from root */
 #root {
   all: unset;
