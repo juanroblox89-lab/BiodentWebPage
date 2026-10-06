@@ -598,14 +598,17 @@ Reglas:
         
         {/* Computador: la doctora es la protagonista del hero, a plena calidad y con más luz */}
         <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden hidden lg:flex justify-end">
-          <div className="w-full h-full relative lg:absolute lg:inset-y-0 lg:left-[31%] 2xl:left-[26%] lg:right-[25%] lg:w-auto lg:[mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)]">
-            {/* Halo cálido detrás: la separa del fondo y le da más presencia */}
-            <div className="absolute inset-x-[6%] bottom-0 top-[10%] bg-[radial-gradient(ellipse_at_50%_38%,rgba(232,200,120,0.30),rgba(201,169,97,0.10)_45%,transparent_70%)] blur-xl"></div>
-            <img
-              src={drClaudiaImg}
-              alt="Dra. Claudia Mabel Tapias, odontóloga de BioDent"
-              className="relative w-full h-full object-contain object-bottom scale-[1.05] origin-bottom brightness-[1.13] contrast-[1.06] saturate-[1.08] drop-shadow-[0_0_38px_rgba(232,200,120,0.28)]"
-            />
+          <div className="relative flex items-end justify-center lg:absolute lg:inset-y-0 lg:left-[32%] 2xl:left-[26%] lg:right-[25%]">
+            {/* Halo cálido y suave detrás del marco */}
+            <div className="absolute inset-x-[4%] bottom-0 top-[6%] bg-[radial-gradient(ellipse_at_50%_35%,rgba(232,200,120,0.16),transparent_68%)] blur-2xl"></div>
+            {/* Marco en arco con contorno dorado */}
+            <div className="relative h-[94%] max-w-full aspect-[4/5] overflow-hidden rounded-t-[999px] border-x border-t border-brand-gold/65 bg-black shadow-[0_0_46px_rgba(201,169,97,0.20)]">
+              <img
+                src={drClaudiaImg}
+                alt="Dra. Claudia Mabel Tapias, odontóloga de BioDent"
+                className="h-full w-full object-cover object-top brightness-[1.08] contrast-[1.05] saturate-[0.9]"
+              />
+            </div>
           </div>
         </div>
 
@@ -711,11 +714,11 @@ Reglas:
         </div>
         {/* Celular: la doctora, a plena luz y debajo de los videos */}
         <figure className="relative z-10 order-[-9998] mb-8 w-full max-w-[300px] self-center lg:hidden">
-          <div className="overflow-hidden rounded-3xl border border-brand-gold/40 bg-black shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
+          <div className="overflow-hidden rounded-t-[999px] rounded-b-3xl border border-brand-gold/65 bg-black shadow-[0_0_40px_rgba(201,169,97,0.18)]">
             <img
               src={drClaudiaImg}
               alt="Dra. Claudia Mabel Tapias, odontóloga de BioDent"
-              className="aspect-[4/5] w-full object-cover object-top contrast-[1.04] saturate-[1.05]"
+              className="aspect-[4/5] w-full object-cover object-top brightness-[1.06] contrast-[1.04] saturate-[0.9]"
             />
           </div>
           <figcaption className="mt-3 text-center">
