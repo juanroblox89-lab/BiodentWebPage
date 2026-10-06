@@ -8,6 +8,20 @@ import drClaudiaImg from './assets/dr_claudia.png'
 import beautifulSmileImg from './assets/beautiful_smile.png'
 import HeroReels from './HeroReels.jsx'
 
+// WhatsApp de la clínica de Bello: todos los botones y mensajes salen de aquí.
+const WHATSAPP_CLINICA = '573148091585';
+const waLink = (texto) => `https://wa.me/${WHATSAPP_CLINICA}?text=${encodeURIComponent(texto)}`;
+// Todo mensaje que llega a la clínica empieza igual, para saber que viene de la página.
+const mensajeWeb = (resto) => `Hola, los vi en la página web y ${resto}`;
+
+// Preguntas rápidas del chat: un toque y se envía.
+const SUGERENCIAS_CHAT = [
+  { etiqueta: 'Tratamientos', texto: '¿Qué tratamientos ofrecen?' },
+  { etiqueta: 'Valoración sin costo', texto: 'Quiero agendar una valoración sin costo' },
+  { etiqueta: 'Ubicación y horario', texto: '¿Dónde están ubicados y cuál es el horario?' },
+  { etiqueta: 'Prótesis flexible', texto: 'Cuéntame sobre la prótesis flexible' },
+];
+
 // Videos reales de la clínica (public/videos). Solo se descargan cuando alguien toca el play.
 const VIDEOS_CASOS = [
   { id: 'testimonio', titulo: 'Testimonio real', detalle: 'Una paciente cuenta su experiencia' },
@@ -153,21 +167,24 @@ function App() {
     setChatMessages((prev) => [...prev, { role: 'assistant', content: '' }]);
 
     try {
-      const systemPrompt = `Eres la recepcionista virtual de BioDent en Bello, Antioquia. Tu trato debe ser EXTREMADAMENTE AMABLE, educado, cálido y humano.
+      const systemPrompt = `Eres la recepcionista virtual de BioDent, la clínica dental de la Dra. Claudia Mabel Tapias en Bello, Antioquia. Hablas en español de Colombia, con un trato amable, cálido y profesional.
 
-REGLAS STRICTAS DE ÁMBITO:
-1. ENFOQUE EXCLUSIVO EN DIENTES Y SALUD DENTAL: Tu ÚNICA función es responder sobre dientes, salud oral, prótesis dentales (flexibles, Acker, totales) y agendamientos en la clínica BioDent. Si el usuario te pregunta sobre cualquier tema ajeno a la odontología (fútbol, recetas, política, noticias, cultura general, etc.), responde muy amablemente: "Con mucho gusto te atendería, pero como recepcionista de BioDent estoy dedicada exclusivamente a consultas sobre tus dientes y tu salud oral. ¿Tienes alguna inquietud sobre tu sonrisa o prótesis?"
-2. BREVE Y CONCISO: Responde en máximo 2 a 3 frases cortas.
-3. WHATSAPP: Cuando el usuario consulte precios o quiera agendar cita, incluye la palabra WhatsApp en tu respuesta de forma natural.
+Qué haces: respondes dudas generales sobre salud oral y los tratamientos de la clínica, y ayudas a agendar una valoración.
 
-Información de BioDent:
-- Especialidad: Prótesis flexibles (livianas, estéticas), prótesis totales y prótesis Acker parciales.
-- Ubicación: Calle 50 #48-34, segundo piso, junto al Éxito del Parque de Bello, Antioquia.
-- Horarios: Lunes a Viernes 9am - 6pm | Sábados 9am - 1pm.`;
+Tratamientos de la clínica: prótesis flexible, prótesis parcial flexible (superior e inferior), prótesis total, prótesis Acker (incluida la semi flexible), diseño de sonrisa en resina, microdiseño, limpieza y aclaramiento dental, y rehabilitación oral.
+Datos reales: la valoración es sin costo. Dirección: Calle 50 #48-34, segundo piso, junto al Éxito del Parque de Bello, Antioquia. Horario: lunes a viernes de 9:00 a. m. a 6:00 p. m. y sábados de 9:00 a. m. a 1:00 p. m. WhatsApp de la clínica: +57 314 809 1585.
+
+Reglas:
+1. Solo hablas de dientes, salud oral y la clínica. Si preguntan por otro tema, responde con amabilidad que solo puedes ayudar con la salud oral y la clínica, y ofrece ayuda con eso.
+2. Respuestas cortas: de 2 a 4 frases. Sin listas largas ni formato especial.
+3. No inventes precios, descuentos, tiempos de tratamiento ni resultados garantizados. Si piden precio o tiempos, explica que depende de cada caso y que se define en la valoración sin costo; invítalos a escribir por WhatsApp.
+4. No des diagnósticos ni recetes medicamentos. Si envían una foto, comenta lo que ves de forma general y aclara que la Dra. Claudia debe valorar el caso en persona.
+5. Cuando la persona quiera agendar, cotizar o tenga una urgencia, invítala a escribir por WhatsApp (+57 314 809 1585) e incluye la palabra WhatsApp en tu respuesta.
+6. Si hay dolor fuerte, inflamación o sangrado que no para, recomienda acudir cuanto antes a atención odontológica o de urgencias.`;
 
       const messagesToSend = [{ role: 'system', content: systemPrompt }];
 
-      for (const m of chatMessages) {
+      for (const m of chatMessages.slice(-10)) {
         if (m.role === 'assistant') {
           if (m.content) messagesToSend.push({ role: 'assistant', content: m.content });
         } else {
@@ -210,40 +227,42 @@ Información de BioDent:
       const reader = response.body.getReader();
       const decoder = new TextDecoder('utf-8');
       let accumulatedContent = '';
+      let pendiente = '';
+
+      const procesarLinea = (linea) => {
+        const trimmed = linea.trim();
+        if (!trimmed.startsWith('data:')) return;
+        const dataStr = trimmed.slice(5).trim();
+        if (!dataStr || dataStr === '[DONE]') return;
+        try {
+          const parsed = JSON.parse(dataStr);
+          const deltaContent = parsed.choices?.[0]?.delta?.content || parsed.choices?.[0]?.message?.content || '';
+          if (deltaContent) {
+            accumulatedContent += deltaContent;
+            setChatMessages((prev) => {
+              const updated = [...prev];
+              const lastIdx = updated.length - 1;
+              if (lastIdx >= 0 && updated[lastIdx].role === 'assistant') {
+                updated[lastIdx] = { role: 'assistant', content: accumulatedContent };
+              }
+              return updated;
+            });
+          }
+        } catch {
+          // línea que no es JSON: se ignora
+        }
+      };
 
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
-
-        const chunk = decoder.decode(value, { stream: true });
-        const lines = chunk.split('\n');
-
-        for (const line of lines) {
-          const trimmed = line.trim();
-          if (trimmed.startsWith('data: ')) {
-            const dataStr = trimmed.slice(6);
-            if (dataStr === '[DONE]') break;
-
-            try {
-              const parsed = JSON.parse(dataStr);
-              const deltaContent = parsed.choices?.[0]?.delta?.content || parsed.choices?.[0]?.message?.content || '';
-              if (deltaContent) {
-                accumulatedContent += deltaContent;
-                setChatMessages((prev) => {
-                  const updated = [...prev];
-                  const lastIdx = updated.length - 1;
-                  if (lastIdx >= 0 && updated[lastIdx].role === 'assistant') {
-                    updated[lastIdx] = { role: 'assistant', content: accumulatedContent };
-                  }
-                  return updated;
-                });
-              }
-            } catch (e) {
-              // Non-JSON line ignored
-            }
-          }
-        }
+        // Un trozo de red puede cortar una línea a la mitad: se guarda lo incompleto para el siguiente.
+        pendiente += decoder.decode(value, { stream: true });
+        const lineas = pendiente.split('\n');
+        pendiente = lineas.pop() ?? '';
+        lineas.forEach(procesarLinea);
       }
+      if (pendiente) procesarLinea(pendiente);
 
       if (!accumulatedContent) {
         setChatMessages((prev) => {
@@ -252,7 +271,7 @@ Información de BioDent:
           if (lastIdx >= 0 && updated[lastIdx].role === 'assistant') {
             updated[lastIdx] = { 
               role: 'assistant', 
-              content: 'Por favor escríbenos a nuestro WhatsApp para poder orientarte de inmediato: https://wa.me/573114345328' 
+              content: 'Por favor escríbenos a nuestro WhatsApp para poder orientarte de inmediato. [BOTON_WHATSAPP]' 
             };
           }
           return updated;
@@ -267,7 +286,7 @@ Información de BioDent:
         if (lastIdx >= 0 && updated[lastIdx].role === 'assistant') {
           updated[lastIdx] = {
             role: 'assistant',
-            content: 'Lo siento, hubo un problema al procesar la respuesta. Puedes escribirnos directamente a nuestro WhatsApp: https://wa.me/573114345328'
+            content: 'Lo siento, tuve un problema para responderte. Puedes volver a intentarlo o escribirnos directamente por WhatsApp. [BOTON_WHATSAPP]'
           };
         }
         return updated;
@@ -302,12 +321,19 @@ Información de BioDent:
       .replace(/\[WhatsApp\]/g, '')
       .trim();
 
+    const ultimaPregunta = [...chatMessages].reverse().find((m) => m.role === 'user' && m.content)?.content || '';
+    const hrefWhatsApp = waLink(mensajeWeb(
+      ultimaPregunta
+        ? `estuve hablando con el asistente y mi pregunta fue: "${ultimaPregunta.slice(0, 140)}". Quiero agendar una valoración.`
+        : 'quiero agendar una valoración sin costo.'
+    ));
+
     return (
       <div className="space-y-2">
         {cleanText && <div>{cleanText}</div>}
         {hasWhatsapp && role === 'assistant' && (
           <a
-            href="https://wa.me/573114345328"
+            href={hrefWhatsApp}
             target="_blank"
             rel="noopener noreferrer"
             className="mt-2.5 inline-flex items-center justify-center gap-2 px-3.5 py-2 rounded-xl bg-[#25D366] text-white font-bold text-xs shadow-md hover:bg-[#20bd5a] hover:scale-[1.02] transition-all w-full text-center no-underline"
@@ -322,10 +348,7 @@ Información de BioDent:
     );
   };
 
-  const getWhatsAppLink = (text) => {
-    const phone = "573114345328"; // Real primary WhatsApp number
-    return `https://wa.me/${phone}?text=${encodeURIComponent(text)}`;
-  };
+  const getWhatsAppLink = (text) => waLink(text);
 
   return (
     <div className="min-h-screen bg-brand-bg text-brand-white relative overflow-hidden font-sans selection:bg-brand-gold selection:text-brand-bg">
@@ -365,7 +388,7 @@ Información de BioDent:
         <div className="flex items-center gap-2 sm:gap-4">
           <div className="flex items-center gap-2 sm:gap-3.5 border-r border-brand-gold/15 pr-2 sm:pr-4 text-[#C9A961]">
             {/* WhatsApp Icon */}
-            <a href="https://wa.me/573114345328" target="_blank" rel="noopener noreferrer" className="hover:text-brand-glow hover:scale-110 transition-all p-1" title="WhatsApp">
+            <a href={waLink(mensajeWeb("quiero más información."))} target="_blank" rel="noopener noreferrer" className="hover:text-brand-glow hover:scale-110 transition-all p-1" title="WhatsApp">
               <svg className="w-4 h-4 sm:w-5 sm:h-5 fill-current" viewBox="0 0 24 24">
                 <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.514 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.724-1.455L0 24zm6.59-4.846c1.62.962 3.21 1.493 4.904 1.496 5.434.004 9.859-4.417 9.862-9.857.002-2.636-1.023-5.11-2.884-6.974C16.672 1.955 14.195.932 11.56.932c-5.443 0-9.87 4.42-9.873 9.861-.001 1.776.479 3.51 1.39 5.048l-.946 3.453 3.536-.93c1.558.847 3.11 1.29 4.39 1.29zM16.59 13.9c-.277-.14-1.643-.812-1.896-.905-.254-.094-.44-.14-.623.14-.184.278-.712.905-.873 1.09-.16.185-.32.207-.597.068-.277-.14-1.17-.43-2.228-1.374-.823-.734-1.38-1.64-1.54-1.92-.162-.276-.017-.426.12-.564.125-.124.277-.323.416-.484.14-.16.184-.277.277-.463.093-.185.047-.348-.024-.486-.07-.14-.622-1.5-.853-2.053-.225-.54-.452-.467-.622-.476-.16-.008-.344-.01-.528-.01-.184 0-.485.07-.738.348-.254.278-.97.948-.97 2.31 0 1.36.99 2.68 1.127 2.866.138.186 1.948 2.973 4.72 4.17 1.102.47 1.96.75 2.628.963.69.22 1.32.19 1.81.114.55-.085 1.643-.67 1.874-1.32.23-.65.23-1.205.162-1.32-.068-.113-.253-.185-.53-.325z" />
               </svg>
@@ -384,7 +407,7 @@ Información de BioDent:
             </a>
           </div>
           <a 
-            href="https://wa.me/573114345328" 
+            href={waLink(mensajeWeb("quiero más información."))} 
             target="_blank"
             rel="noopener noreferrer"
             className="shimmer-btn relative overflow-hidden bg-transparent border border-brand-gold text-brand-gold px-3 sm:px-5 py-1.5 sm:py-2 rounded-full font-heading text-[10px] sm:text-xs font-semibold uppercase tracking-wider transition-all duration-300 hover:bg-brand-gold hover:text-brand-bg hover:shadow-[0_0_15px_rgba(201,169,97,0.3)] shrink-0"
@@ -462,7 +485,7 @@ Información de BioDent:
           <div className="flex flex-col sm:flex-row flex-wrap gap-3 items-stretch sm:items-center w-full">
             {/* WhatsApp Button */}
             <a 
-              href={getWhatsAppLink("Hola Dra. Claudia, vi su página y quiero agendar una valoración sin costo.")}
+              href={getWhatsAppLink(mensajeWeb("quiero agendar una valoración sin costo."))}
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center justify-center gap-2.5 bg-brand-gold text-[#0A0A0A] px-6 py-3 rounded-full font-heading text-xs font-bold uppercase tracking-widest transition-all duration-300 hover:bg-brand-glow hover:shadow-[0_0_20px_rgba(232,200,120,0.4)] group"
@@ -503,7 +526,7 @@ Información de BioDent:
         </div>
         {/* Videos reales de la clínica: escenario tipo reel en el hero */}
         <div className="relative z-10 order-first mb-8 self-center w-full max-w-[300px] lg:order-none lg:mb-0 lg:mt-0 lg:max-w-none lg:shrink-0 lg:w-[min(360px,calc((100vh_-_290px)*0.5625))] xl:w-[min(400px,calc((100vh_-_290px)*0.5625))]">
-          <HeroReels videos={VIDEOS_CASOS} ctaHref={(v) => getWhatsAppLink(`Hola Dra. Claudia, vi el video "${v.titulo}: ${v.detalle}" en su página y quiero agendar una valoración sin costo.`)} />
+          <HeroReels videos={VIDEOS_CASOS} ctaHref={(v) => getWhatsAppLink(mensajeWeb(`vi el video "${v.titulo}: ${v.detalle}" y quiero agendar una valoración sin costo.`))} />
         </div>
       </section>
 
@@ -642,7 +665,7 @@ Información de BioDent:
               <div className="border-t border-brand-gold/10 pt-4 flex justify-between items-center">
                 <span className="font-heading text-[10px] tracking-widest text-brand-gold uppercase">COMODIDAD, ESTÉTICA Y CONFIANZA</span>
                 <a 
-                  href={getWhatsAppLink("Hola Dra. Claudia, deseo agendar una valoración para una Prótesis Flexible.")} 
+                  href={getWhatsAppLink(mensajeWeb("quiero agendar una valoración sin costo para una Prótesis Flexible."))} 
                   target="_blank" 
                   rel="noopener noreferrer" 
                   className="cta-valoracion inline-flex items-center gap-1.5 rounded-full bg-brand-gold px-4 py-2.5 font-heading text-[11px] font-bold uppercase tracking-wider text-[#0A0A0A] transition-colors hover:bg-brand-glow"
@@ -710,7 +733,7 @@ Información de BioDent:
               <div className="border-t border-brand-gold/10 pt-4 flex justify-between items-center">
                 <span className="font-heading text-[10px] tracking-widest text-brand-gold uppercase">TU SONRISA, NUESTRA PASIÓN</span>
                 <a 
-                  href={getWhatsAppLink("Hola Dra. Claudia, deseo agendar una valoración para una Prótesis Total.")} 
+                  href={getWhatsAppLink(mensajeWeb("quiero agendar una valoración sin costo para una Prótesis Total."))} 
                   target="_blank" 
                   rel="noopener noreferrer" 
                   className="cta-valoracion inline-flex items-center gap-1.5 rounded-full bg-brand-gold px-4 py-2.5 font-heading text-[11px] font-bold uppercase tracking-wider text-[#0A0A0A] transition-colors hover:bg-brand-glow"
@@ -778,7 +801,7 @@ Información de BioDent:
               <div className="border-t border-brand-gold/10 pt-4 flex justify-between items-center">
                 <span className="font-heading text-[10px] tracking-widest text-brand-gold uppercase">COMODIDAD, ESTÉTICA Y CONFIANZA</span>
                 <a 
-                  href={getWhatsAppLink("Hola Dra. Claudia, deseo agendar una valoración para una Prótesis Acker.")} 
+                  href={getWhatsAppLink(mensajeWeb("quiero agendar una valoración sin costo para una Prótesis Acker."))} 
                   target="_blank" 
                   rel="noopener noreferrer" 
                   className="cta-valoracion inline-flex items-center gap-1.5 rounded-full bg-brand-gold px-4 py-2.5 font-heading text-[11px] font-bold uppercase tracking-wider text-[#0A0A0A] transition-colors hover:bg-brand-glow"
@@ -815,7 +838,7 @@ Información de BioDent:
                 </div>
                 <p className="font-sans text-xs text-brand-secondary font-light leading-relaxed flex-1">{s.texto}</p>
                 <a
-                  href={getWhatsAppLink(`Hola Dra. Claudia, deseo agendar una valoración para ${s.mensaje}.`)}
+                  href={getWhatsAppLink(mensajeWeb(`quiero agendar una valoración sin costo para ${s.mensaje}.`))}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="cta-valoracion inline-flex w-full items-center justify-center gap-1.5 rounded-full bg-brand-gold px-4 py-2.5 font-heading text-[11px] font-bold uppercase tracking-wider text-[#0A0A0A] transition-colors hover:bg-brand-glow"
@@ -1073,9 +1096,8 @@ Información de BioDent:
                   <div>
                     <span className="font-heading text-[10px] font-bold tracking-wider text-brand-white uppercase block">Líneas de Atención</span>
                     <p className="font-sans text-xs text-brand-secondary font-light">
-                      WhatsApp Principal: <a href="https://wa.me/573114345328" target="_blank" rel="noopener noreferrer" className="hover:text-brand-gold transition-colors">+57 311 434 5328</a><br />
-                      WhatsApp Consulta: <a href="https://wa.me/573148091585" target="_blank" rel="noopener noreferrer" className="hover:text-brand-gold transition-colors">+57 314 809 1585</a><br />
-                      WhatsApp Adicional: <a href="https://wa.me/573145304329" target="_blank" rel="noopener noreferrer" className="hover:text-brand-gold transition-colors">+57 314 530 4329</a>
+                      WhatsApp de la clínica: <a href={waLink(mensajeWeb("quiero agendar una valoración sin costo."))} target="_blank" rel="noopener noreferrer" className="text-brand-gold hover:text-brand-white transition-colors font-semibold">+57 314 809 1585</a><br />
+                      Otras líneas: <a href="https://wa.me/573114345328" target="_blank" rel="noopener noreferrer" className="hover:text-brand-gold transition-colors">+57 311 434 5328</a> y <a href="https://wa.me/573145304329" target="_blank" rel="noopener noreferrer" className="hover:text-brand-gold transition-colors">+57 314 530 4329</a>
                     </p>
                   </div>
                 </div>
@@ -1084,7 +1106,7 @@ Información de BioDent:
 
             {/* Direct WhatsApp Call-to-action */}
             <a 
-              href="https://wa.me/573114345328"
+              href={waLink(mensajeWeb("quiero agendar una valoración sin costo."))}
               target="_blank"
               rel="noopener noreferrer"
               className="shimmer-btn relative overflow-hidden w-full text-center bg-brand-gold text-[#0A0A0A] py-3.5 rounded-xl font-heading text-xs font-bold uppercase tracking-widest hover:bg-brand-glow hover:shadow-[0_0_15px_rgba(232,200,120,0.3)] transition-all mt-4"
@@ -1266,7 +1288,7 @@ Información de BioDent:
                         {m.content ? (
                           renderMessageContent(m.content, m.role)
                         ) : (m.role === 'assistant' && isChatLoading && idx === chatMessages.length - 1 ? (
-                          <span className="animate-pulse text-brand-gold font-medium">Escribiendo...</span>
+                          <span className="inline-flex items-center gap-1 py-0.5" role="status" aria-label="Escribiendo"><span className="h-1.5 w-1.5 animate-bounce rounded-full bg-brand-gold [animation-delay:-0.3s]"></span><span className="h-1.5 w-1.5 animate-bounce rounded-full bg-brand-gold [animation-delay:-0.15s]"></span><span className="h-1.5 w-1.5 animate-bounce rounded-full bg-brand-gold"></span></span>
                         ) : '')}
                       </div>
                     </div>
@@ -1288,6 +1310,21 @@ Información de BioDent:
                       >
                         &times;
                       </button>
+                    </div>
+                  )}
+
+                  {!isChatLoading && !selectedImage && (
+                    <div className="scroll-limpio -mx-1 flex gap-1.5 overflow-x-auto px-1 pb-0.5" role="group" aria-label="Preguntas rápidas">
+                      {SUGERENCIAS_CHAT.map((q) => (
+                        <button
+                          key={q.etiqueta}
+                          type="button"
+                          onClick={() => processChatMessage(q.texto)}
+                          className="shrink-0 rounded-full border border-brand-gold/40 bg-[#22222A] px-3 py-1.5 text-[11px] font-semibold text-brand-gold transition-colors hover:bg-brand-gold hover:text-[#121214]"
+                        >
+                          {q.etiqueta}
+                        </button>
+                      ))}
                     </div>
                   )}
 
