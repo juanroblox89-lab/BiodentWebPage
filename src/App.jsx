@@ -309,7 +309,7 @@ Reglas:
     processChatMessage(cleanQuestion, null);
   };
 
-  const renderMessageContent = (content, role) => {
+  const renderMessageContent = (content, role, esUltimo = false) => {
     if (!content) return null;
 
     const lower = content.toLowerCase();
@@ -331,7 +331,7 @@ Reglas:
     return (
       <div className="space-y-2">
         {cleanText && <div>{cleanText}</div>}
-        {hasWhatsapp && role === 'assistant' && (
+        {hasWhatsapp && role === 'assistant' && esUltimo && (
           <a
             href={hrefWhatsApp}
             target="_blank"
@@ -1286,7 +1286,7 @@ Reglas:
                           />
                         )}
                         {m.content ? (
-                          renderMessageContent(m.content, m.role)
+                          renderMessageContent(m.content, m.role, idx === chatMessages.length - 1 && !isChatLoading)
                         ) : (m.role === 'assistant' && isChatLoading && idx === chatMessages.length - 1 ? (
                           <span className="inline-flex items-center gap-1 py-0.5" role="status" aria-label="Escribiendo"><span className="h-1.5 w-1.5 animate-bounce rounded-full bg-brand-gold [animation-delay:-0.3s]"></span><span className="h-1.5 w-1.5 animate-bounce rounded-full bg-brand-gold [animation-delay:-0.15s]"></span><span className="h-1.5 w-1.5 animate-bounce rounded-full bg-brand-gold"></span></span>
                         ) : '')}
