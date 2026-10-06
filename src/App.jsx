@@ -6,7 +6,6 @@ import ackerProsthesisImg from './assets/acker_prosthesis.png'
 import dentalOfficeImg from './assets/dental_office.png'
 import drClaudiaImg from './assets/dr_claudia_hd.jpg'
 import HeroReels from './HeroReels.jsx'
-import AmbientVideo from './AmbientVideo.jsx'
 
 // WhatsApp de la clínica de Bello: todos los botones y mensajes salen de aquí.
 const WHATSAPP_CLINICA = '573148091585';
@@ -823,11 +822,6 @@ Reglas:
         </div>
       </section>
 
-      {/* Video ambient entre servicios y doctora */}
-      <div aria-hidden="true" className="relative z-0 hidden h-0 lg:block">
-        <AmbientVideo src="/videos/demo-acker-5.mp4" poster="/videos/posters/demo-acker-5.jpg" side="left" className="top-[-200px]" />
-      </div>
-
       {/* La doctora */}
       <section id="doctora" className="relative z-10 mx-auto max-w-6xl px-5 py-16 sm:px-8 md:px-12 md:py-24">
         <div className="grid grid-cols-1 items-center gap-10 lg:grid-cols-12 lg:gap-16">
@@ -862,11 +856,6 @@ Reglas:
         </div>
       </section>
 
-      {/* Video ambient */}
-      <div aria-hidden="true" className="relative z-0 hidden h-0 lg:block">
-        <AmbientVideo src="/videos/testimonio-2.mp4" poster="/videos/posters/testimonio-2.jpg" side="left" className="top-[-190px]" />
-      </div>
-
       {/* Casos reales: carátulas de los videos de la clínica */}
       <section id="casos" className="relative z-10 mx-auto max-w-6xl px-5 py-16 sm:px-8 md:px-12 md:py-24">
         <div className="mb-10 text-center md:mb-14">
@@ -884,11 +873,6 @@ Reglas:
           El primero es el testimonio de una paciente. Cada caso es distinto: la Dra. Claudia revisa el tuyo en la valoración sin costo.
         </p>
       </section>
-
-      {/* Video ambient */}
-      <div aria-hidden="true" className="relative z-0 hidden h-0 lg:block">
-        <AmbientVideo src="/videos/demo-acker-1.mp4" poster="/videos/posters/demo-acker-1.jpg" side="right" className="top-[-190px]" />
-      </div>
 
       {/* Appointment and Location Section */}
       <section id="contacto" className="relative z-10 mx-auto max-w-5xl px-5 py-16 sm:px-8 md:px-12 md:py-24">
@@ -982,11 +966,6 @@ Reglas:
 
         </div>
       </section>
-
-      {/* Video ambient entre contacto y odontología en Bello */}
-      <div aria-hidden="true" className="relative z-0 hidden h-0 lg:block">
-        <AmbientVideo src="/videos/testimonio-5.mp4" poster="/videos/posters/testimonio-5.jpg" side="left" className="top-[-180px]" />
-      </div>
 
       {/* Odontología en Bello: texto y enlaces rastreables a cada tratamiento */}
       <section id="odontologia-en-bello" aria-labelledby="titulo-odontologia-bello" className="relative z-10 max-w-5xl mx-auto px-6 md:px-12 py-14 border-t border-brand-gold/10">
