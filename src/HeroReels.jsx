@@ -189,7 +189,7 @@ export default function HeroReels({ videos = [], ctaHref = null }) {
               onClick={() => setSonido((s) => !s)}
               aria-pressed={sonido}
               aria-label={sonido ? 'Silenciar video' : 'Activar sonido del video'}
-              className="flex h-8 w-8 items-center justify-center rounded-full border border-brand-gold/50 bg-black/55 text-brand-gold backdrop-blur-sm transition-colors hover:bg-brand-gold hover:text-black focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-gold"
+              className="flex h-11 w-11 items-center justify-center rounded-full border border-brand-gold/50 bg-black/55 text-brand-gold backdrop-blur-sm transition-colors hover:bg-brand-gold hover:text-black focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-gold"
             >
               {sonido ? (
                 <svg className="h-4 w-4 fill-current" viewBox="0 0 24 24" aria-hidden="true">
@@ -216,7 +216,7 @@ export default function HeroReels({ videos = [], ctaHref = null }) {
           href={ctaHref(actual)}
           target="_blank"
           rel="noopener noreferrer"
-          className="cta-valoracion mt-3 flex w-full items-center justify-center gap-2 rounded-full bg-brand-gold px-4 py-3 font-heading text-xs font-bold uppercase tracking-wider text-[#0A0A0A] transition-colors hover:bg-brand-glow focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-gold"
+          className="cta-valoracion mt-3 flex min-h-[46px] w-full items-center justify-center gap-2 rounded-full bg-brand-gold px-4 py-3 font-heading text-xs font-bold uppercase tracking-wider text-[#0A0A0A] transition-colors hover:bg-brand-glow focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-gold"
         >
           Quiero este resultado
           <span aria-hidden="true">&rarr;</span>
@@ -232,7 +232,7 @@ export default function HeroReels({ videos = [], ctaHref = null }) {
             onClick={() => irA(i)}
             aria-label={`Ver: ${v.titulo} ${v.detalle}`}
             aria-current={i === idx ? true : undefined}
-            className={`relative h-10 w-9 shrink-0 overflow-hidden rounded-md border transition-all duration-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-gold lg:w-full ${
+            className={`relative h-11 w-11 shrink-0 lg:h-10 overflow-hidden rounded-md border transition-all duration-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-gold lg:w-full ${
               i === idx
                 ? 'border-brand-gold shadow-[0_0_12px_rgba(201,169,97,0.45)]'
                 : 'border-brand-gold/20 opacity-70 hover:opacity-100'

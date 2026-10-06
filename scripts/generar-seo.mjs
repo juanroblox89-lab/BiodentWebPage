@@ -50,6 +50,7 @@ const PAGINAS = [
       ], 'lista-tratamientos'],
       ['Cómo llegar y cuándo atendemos', [
         `Estamos en la ${CLINICA.direccion}. ${CLINICA.horario}`,
+        'Mira el recorrido en video, de la calle al consultorio: <<Cómo llegar (video)|' + SITIO + '/#como-llegar>>.',
         'Puedes escribirnos por WhatsApp al +57 314 809 1585 para agendar tu valoración sin costo o resolver dudas antes de venir.',
       ]],
       ['Tu primera visita: la valoración sin costo', [
@@ -62,6 +63,7 @@ const PAGINAS = [
     ],
     mensaje: 'quiero agendar una valoración sin costo.',
     servicio: null,
+    video: 'como-llegar',
   },
   {
     slug: 'protesis-dentales-bello',
@@ -216,39 +218,80 @@ const LISTA_TRATAMIENTOS = [
 const esc = (t) => String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 const waUrl = (resto) => `https://wa.me/${CLINICA.wa}?text=${encodeURIComponent('Hola, los vi en la página web y ' + resto)}`;
 
+const ICONOS = {
+  check: '<path d="M5 13l4 4L19 7"/>',
+  escudo: '<path d="M9 12l2 2 4-4m5.6-4a12 12 0 01-8.6-3 12 12 0 01-8.6 3A12 12 0 003 9c0 5.6 3.8 10.3 9 11.6 5.2-1.3 9-6 9-11.6 0-1-.1-2-.4-3z"/>',
+  brillo: '<path d="M5 3v4M3 5h4M6 17v4M4 19h4M13 3l2.5 5.5L21 11l-5.5 2.5L13 19l-2.5-5.5L5 11l5.5-2.5L13 3z"/>',
+  sonrisa: '<path d="M14.8 14.8a4 4 0 01-5.6 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>',
+  diente: '<path d="M12 4c2.5 0 4 1.5 4 4s-.5 4-1 6.5S14 20 12 20s-3-3.5-3-5.5.5-4-1-6.5 1.5-4 4-4z"/>',
+  lugar: '<path d="M17.7 16.7l-4.3 4.2a2 2 0 01-2.8 0l-4.3-4.2a8 8 0 1111.4 0zM15 11a3 3 0 11-6 0 3 3 0 016 0z"/>',
+  reloj: '<path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>',
+};
+const BENEFICIOS_BASE = [['escudo', 'Valoración sin costo'], ['diente', 'Atención de la Dra. Claudia'], ['lugar', 'Junto al Éxito del Parque de Bello']];
+const BENEFICIOS = {
+  'protesis-flexible-bello': [['brillo', 'Ligera y flexible'], ['sonrisa', 'Estética y discreta'], ['escudo', 'Cómoda y resistente'], ['check', 'Base translúcida que deja ver el color de la encía']],
+  'protesis-total-dentadura-bello': [['diente', 'Restaura la función masticatoria'], ['sonrisa', 'Mejora la estética facial'], ['escudo', 'Más comodidad y confianza']],
+  'protesis-acker-bello': [['brillo', 'Ligera y flexible'], ['sonrisa', 'Estética y discreta'], ['escudo', 'Cómoda y resistente'], ['check', 'Sujeción firme en los dientes que conservas']],
+  'limpieza-y-blanqueamiento-dental-bello': [['check', 'Elimina placa y sarro'], ['brillo', 'Dientes más blancos y brillantes'], ['escudo', 'Protege tu salud bucal'], ['sonrisa', 'Más confianza al sonreír']],
+};
+const svgIco = (k) => `<span class="ico"><svg viewBox="0 0 24 24" aria-hidden="true">${ICONOS[k]}</svg></span>`;
+const PLAY = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>';
+const WA_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.514 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.724-1.455L0 24zm6.59-4.846c1.62.962 3.21 1.493 4.904 1.496 5.434.004 9.859-4.417 9.862-9.857.002-2.636-1.023-5.11-2.884-6.974C16.672 1.955 14.195.932 11.56.932c-5.443 0-9.87 4.42-9.873 9.861-.001 1.776.479 3.51 1.39 5.048l-.946 3.453 3.536-.93c1.558.847 3.11 1.29 4.39 1.29z"/></svg>';
 const CSS = `
-:root{--bg:#0a0a0a;--oro:#c9a961;--oro2:#e8c878;--txt:#f5f0e8;--sec:#a39d8f;--linea:rgba(201,169,97,.22)}
-*{box-sizing:border-box}html{-webkit-text-size-adjust:100%}
-body{margin:0;background:var(--bg);color:var(--txt);font:16px/1.65 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+:root{--bg:#0a0a0a;--panel:#100e09;--oro:#c9a961;--oro2:#e8c878;--txt:#f5f0e8;--sec:#b9b3a5;--linea:rgba(201,169,97,.28)}
+*{box-sizing:border-box}html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--txt);font:16px/1.65 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding-bottom:64px}
 a{color:var(--oro)}a:hover{color:var(--oro2)}
-.cab{position:sticky;top:0;z-index:5;background:rgba(10,10,10,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--linea)}
-.cab>div{max-width:860px;margin:0 auto;padding:10px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px}
-.marca{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--txt);font-weight:700;letter-spacing:.2em;font-size:13px}
-.marca img{width:36px;height:36px;border-radius:50%}
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:var(--oro);color:#0a0a0a;text-decoration:none;font-weight:700;padding:11px 18px;border-radius:999px;font-size:14px}
+a:focus-visible,button:focus-visible,summary:focus-visible{outline:3px solid var(--oro2);outline-offset:2px}
+.cab{position:sticky;top:0;z-index:5;background:rgba(10,10,10,.94);backdrop-filter:blur(8px);border-bottom:1px solid var(--linea)}
+.cab>div{max-width:1040px;margin:0 auto;padding:10px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.marca{display:flex;align-items:center;gap:10px;min-height:44px;text-decoration:none;color:var(--txt);font-weight:700;letter-spacing:.2em;font-size:13px}
+.marca img{width:36px;height:36px;border-radius:50%;border:1px solid var(--linea)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:46px;background:var(--oro);color:#0a0a0a;text-decoration:none;font-weight:700;padding:11px 22px;border-radius:999px;font-size:14px;text-align:center}
 .btn:hover{background:var(--oro2);color:#0a0a0a}
-.btn.chico{padding:8px 14px;font-size:12px}
-main{max-width:860px;margin:0 auto;padding:22px 18px 70px}
-.migas{font-size:13px;color:var(--sec);margin-bottom:14px}.migas a{color:var(--sec)}
-h1{font-size:clamp(26px,5.5vw,40px);line-height:1.15;margin:0 0 14px;letter-spacing:.02em}
-h2{font-size:21px;margin:34px 0 10px;color:var(--oro)}
+.btn.chico{min-height:44px;padding:8px 16px;font-size:13px}
+.btn svg{width:18px;height:18px;fill:currentColor;flex:none}
+main{max-width:1040px;margin:0 auto;padding:18px 18px 40px}
+.migas{font-size:13px;color:var(--sec);margin:0 0 14px}.migas a{color:var(--sec)}
+.hero{display:grid;gap:22px;align-items:center;border:1px solid var(--linea);border-radius:24px;background:radial-gradient(ellipse at 20% 0,rgba(201,169,97,.14),transparent 60%),var(--panel);padding:26px 20px}
+.hero .tag{display:block;font-size:12px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:var(--oro);margin-bottom:10px}
+h1{font-size:clamp(27px,6vw,42px);line-height:1.15;margin:0 0 14px;letter-spacing:.01em}
+.intro{font-size:17px;color:#e6e0d4;margin:0 0 20px}
+.hero .btn{width:100%}
+.video{position:relative;width:min(100%,260px);aspect-ratio:9/16;margin:0 auto;border-radius:20px;overflow:hidden;border:2px solid var(--oro);background:#000;box-shadow:0 0 36px rgba(201,169,97,.22)}
+.video img,.video video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.play{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.28);border:0;cursor:pointer;text-decoration:none}
+.play span{width:72px;height:72px;border-radius:50%;background:var(--oro);display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 8px rgba(201,169,97,.25),0 10px 30px rgba(0,0,0,.5)}
+.play svg{width:34px;height:34px;fill:#0a0a0a;margin-left:4px}
+.play:hover span{background:var(--oro2)}
+.vtxt{position:absolute;left:0;right:0;bottom:0;background:rgba(0,0,0,.72);text-align:center;font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;padding:8px;color:var(--txt)}
+h2{font-size:22px;line-height:1.25;margin:40px 0 12px;color:var(--oro)}
 p{margin:0 0 12px}
-.intro{font-size:18px;color:#e6e0d4}
+.beneficios{list-style:none;margin:14px 0 0;padding:0;display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+.beneficios li{display:flex;align-items:center;gap:12px;border:1px solid var(--linea);border-radius:16px;padding:14px;background:var(--panel);font-weight:600}
+.ico{flex:none;width:40px;height:40px;border-radius:50%;border:1px solid var(--linea);background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;color:var(--oro)}
+.ico svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
 .tarjetas{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));margin:14px 0}
-.tarjeta{display:block;border:1px solid var(--linea);border-radius:14px;padding:14px 16px;text-decoration:none;color:var(--txt);background:#101010}
+.tarjeta{display:block;border:1px solid var(--linea);border-radius:16px;padding:16px;text-decoration:none;color:var(--txt);background:var(--panel);min-height:44px}
 .tarjeta:hover{border-color:var(--oro)}.tarjeta b{display:block;color:var(--oro);margin-bottom:2px}.tarjeta span{color:var(--sec);font-size:14px}
-.cta{margin:26px 0;padding:18px;border:1px solid var(--linea);border-radius:16px;background:#101010;text-align:center}
-.cta p{margin:0 0 12px}
-details{border:1px solid var(--linea);border-radius:12px;margin:8px 0;background:#101010}
-summary{cursor:pointer;padding:13px 16px;font-weight:600;list-style:none}summary::-webkit-details-marker{display:none}
-summary::after{content:"+";float:right;color:var(--oro)}details[open] summary::after{content:"–"}
-details p{padding:0 16px 14px;margin:0;color:#d8d2c6}
-video{width:100%;max-width:300px;border-radius:16px;border:1px solid var(--linea);display:block;margin:14px 0;background:#000}
-.datos{border-top:1px solid var(--linea);margin-top:34px;padding-top:18px;font-size:14px;color:var(--sec)}
+.cta{margin:34px 0;padding:22px 18px;border:1px solid var(--linea);border-radius:20px;background:var(--panel);text-align:center}
+.cta p{margin:0 0 14px;font-size:17px}
+details{border:1px solid var(--linea);border-radius:14px;margin:8px 0;background:var(--panel)}
+details[open]{border-color:var(--oro)}
+summary{cursor:pointer;padding:15px 16px;font-weight:600;list-style:none;display:flex;justify-content:space-between;gap:12px;min-height:48px;align-items:center}summary::-webkit-details-marker{display:none}
+summary::after{content:"+";color:var(--oro);font-size:22px;line-height:1}details[open] summary::after{content:"\\2013"}
+details p{padding:0 16px 16px;margin:0;color:#d8d2c6}
+.datos{border-top:1px solid var(--linea);margin-top:40px;padding-top:20px;font-size:14px;color:var(--sec)}
 .aviso{font-size:13px;color:var(--sec);margin-top:22px}
 footer{border-top:1px solid var(--linea);padding:22px 18px;text-align:center;font-size:13px;color:var(--sec)}
+.barra{position:fixed;left:0;right:0;bottom:0;z-index:6;background:rgba(10,10,10,.96);border-top:1px solid var(--linea);padding:8px 14px;display:flex;justify-content:center}
+.barra .btn{width:100%;max-width:460px;min-height:46px}
+@media(min-width:760px){
+.hero{grid-template-columns:1.4fr 1fr;padding:38px 36px;gap:34px}.hero .btn{width:auto}
+.hero.sinvideo{grid-template-columns:1fr}
+body{padding-bottom:0}.barra{display:none}
+}
 `;
-
 function listaTratamientos(actual) {
   return `<div class="tarjetas">${LISTA_TRATAMIENTOS.filter(([s]) => s !== actual)
     .map(([s, t, d]) => `<a class="tarjeta" href="/${s}/"><b>${esc(t)}</b><span>${esc(d)}</span></a>`).join('')}</div>`;
@@ -284,15 +327,21 @@ function render(p) {
   const ld = JSON.stringify({ '@context': 'https://schema.org', '@graph': grafo });
 
   const secciones = p.secciones.map(([titulo, parrafos, extra]) => {
-    const ps = parrafos.map((t) => `<p>${esc(t)}</p>`).join('');
+    const ps = parrafos.map((t) => `<p>${esc(t).replace(/&lt;&lt;(.+?)\|(.+?)&gt;&gt;/g, '<a href="$2">$1</a>')}</p>`).join('');
     const bloque = extra === 'lista-tratamientos' ? listaTratamientos(null) : extra === 'lista-protesis' ? listaTratamientos(null).replace(/<a class="tarjeta" href="\/(diseno|limpieza|rehabilitacion)[^]*?<\/a>/g, '') : '';
     return `<h2>${esc(titulo)}</h2>${ps}${bloque}`;
   }).join('');
 
-  const video = p.video ? `<video controls preload="none" playsinline poster="/videos/posters/${p.video}.jpg" src="/videos/${p.video}.mp4" aria-label="Video de un caso real de la clínica"></video>` : '';
+  const esCaso = p.video && p.video !== 'como-llegar';
+  const etiquetaVideo = p.video === 'como-llegar' ? 'Mira cómo llegar' : 'Mira un caso real';
+  const alVideo = p.video === 'como-llegar' ? 'Video: recorrido a pie hasta el consultorio de BioDent' : 'Video de un caso real de la clínica';
+  const onclick = `var b=this.parentNode;b.innerHTML='<video controls autoplay playsinline src=&quot;/videos/${p.video}.mp4&quot; poster=&quot;/videos/posters/${p.video}.jpg&quot; aria-label=&quot;${alVideo}&quot;></video>'`;
+  const video = p.video ? `<div class="video"><img src="/videos/posters/${p.video}.jpg" alt="" width="540" height="960" loading="eager"><button type="button" class="play" aria-label="Reproducir video: ${esc(p.nombreCorto)}" onclick="${onclick}"><span>${PLAY}</span></button><div class="vtxt">${etiquetaVideo}</div></div>` : '';
+  const lista = BENEFICIOS[p.slug] || BENEFICIOS_BASE;
+  const beneficios = `<ul class="beneficios">${lista.map(([k, t]) => `<li>${svgIco(k)}<span>${esc(t)}</span></li>`).join('')}</ul>`;
   const faq = p.faq.map(([q, a]) => `<details><summary>${esc(q)}</summary><p>${esc(a)}</p></details>`).join('');
   const otros = p.slug === 'dentista-en-bello' ? '' : `<h2>Otros tratamientos en BioDent</h2>${listaTratamientos(p.slug)}`;
-
+  void esCaso;
   return `<!doctype html>
 <html lang="es">
 <head>
@@ -325,22 +374,31 @@ function render(p) {
 </div></header>
 <main>
 <nav class="migas" aria-label="Migas de pan"><a href="/">BioDent</a> › ${p.slug === 'dentista-en-bello' ? '' : '<a href="/dentista-en-bello/">Tratamientos en Bello</a> › '}${esc(p.nombreCorto)}</nav>
+<section class="hero${p.video ? '' : ' sinvideo'}">
+<div>
+<span class="tag">BioDent · Bello, Antioquia</span>
 <h1>${esc(p.h1)}</h1>
 <p class="intro">${esc(p.intro)}</p>
-<div class="cta"><p><b>Valoración sin costo con la ${esc(CLINICA.doctora)}.</b></p><a class="btn" href="${waUrl(p.mensaje)}" rel="noopener">Quiero mi valoración sin costo</a></div>
-${secciones}
+<a class="btn" href="${waUrl(p.mensaje)}" rel="noopener">${WA_SVG}Quiero mi valoración sin costo</a>
+</div>
 ${video}
+</section>
+<h2>Lo que debes saber</h2>
+${beneficios}
+${secciones}
 <h2>Preguntas frecuentes</h2>
 ${faq}
-<div class="cta"><p>¿Listo para dar el primer paso? Escríbenos y agendamos tu valoración.</p><a class="btn" href="${waUrl(p.mensaje)}" rel="noopener">Escribir por WhatsApp</a></div>
+<div class="cta"><p>¿Listo para dar el primer paso? Escríbenos y agendamos tu valoración.</p><a class="btn" href="${waUrl(p.mensaje)}" rel="noopener">${WA_SVG}Escribir por WhatsApp</a></div>
 ${otros}
 <div class="datos">
 <p><b>BioDent - ${esc(CLINICA.doctora)}</b><br>${esc(CLINICA.direccion)}<br>${esc(CLINICA.horario)}</p>
 <p>WhatsApp de la clínica: <a href="https://wa.me/${CLINICA.wa}">${CLINICA.telefono}</a>. Otras líneas: ${CLINICA.otros.map(([t, n]) => `<a href="https://wa.me/${n}">${t}</a>`).join(' y ')}.</p>
+<p><a href="${SITIO}/#como-llegar">Cómo llegar (video)</a></p>
 <p><a href="${CLINICA.instagram}" rel="noopener">Instagram</a> · <a href="${CLINICA.facebook}" rel="noopener">Facebook</a> · <a href="/">Inicio</a></p>
 <p class="aviso">${esc(AVISO)}</p>
 </div>
 </main>
+<div class="barra"><a class="btn" href="${waUrl(p.mensaje)}" rel="noopener">${WA_SVG}Escribir por WhatsApp</a></div>
 <footer>&copy; 2026 BioDent. Odontología en Bello, Antioquia.</footer>
 </body>
 </html>
