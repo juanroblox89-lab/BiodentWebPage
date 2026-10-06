@@ -403,7 +403,7 @@ Información de BioDent:
             <img 
               src={drClaudiaImg} 
               alt="Dra. Claudia Backdrop" 
-              className="w-full h-full object-cover object-top opacity-75 sm:opacity-80 lg:opacity-70" 
+              className="w-full h-full object-cover object-top opacity-35 sm:opacity-45 lg:opacity-60" 
             />
             {/* Dark gradient overlay to preserve quiet luxury text contrast across all screen sizes */}
             <div className="absolute inset-0 bg-gradient-to-t md:bg-gradient-to-r from-[#0A0A0A] via-[#0A0A0A]/90 lg:via-[#0A0A0A]/60 to-transparent"></div>
@@ -489,7 +489,7 @@ Información de BioDent:
 
         </div>
         {/* Videos reales de la clínica: escenario tipo reel en el hero */}
-        <div className="relative z-10 mt-8 self-center w-full max-w-[300px] lg:mt-0 lg:max-w-none lg:shrink-0 lg:w-[min(360px,calc((100vh_-_290px)*0.5625))] xl:w-[min(400px,calc((100vh_-_290px)*0.5625))]">
+        <div className="relative z-10 order-first mb-8 self-center w-full max-w-[300px] lg:order-none lg:mb-0 lg:mt-0 lg:max-w-none lg:shrink-0 lg:w-[min(360px,calc((100vh_-_290px)*0.5625))] xl:w-[min(400px,calc((100vh_-_290px)*0.5625))]">
           <HeroReels videos={VIDEOS_CASOS} ctaHref={(v) => getWhatsAppLink(`Hola Dra. Claudia, vi el video "${v.titulo}: ${v.detalle}" en su página y quiero agendar una valoración sin costo.`)} />
         </div>
       </section>
