@@ -410,10 +410,23 @@ Información de BioDent:
           </div>
         </div>
 
+        {/* Cabecera compacta (solo celular): logo y nombre, y justo debajo los videos */}
+        <div className="relative z-10 order-first -mt-2 mb-4 flex w-full items-center justify-center gap-3 self-center lg:hidden">
+          <img
+            src={biodentLogoImg}
+            alt="BioDent"
+            className="h-12 w-12 shrink-0 rounded-full border border-brand-gold/40 bg-black/60 object-contain p-0.5"
+          />
+          <div className="text-left leading-tight">
+            <span className="font-heading block text-sm font-bold uppercase tracking-[0.25em] text-brand-white">BioDent Bello</span>
+            <span className="font-script block text-xl text-brand-gold">Dra. Claudia Mabel Tapias</span>
+          </div>
+        </div>
+
         <div className="max-w-2xl text-left flex flex-col items-start relative z-10">
           
           {/* Logo with circular border - responsive scaling */}
-          <div className="relative mb-6 select-none">
+          <div className="relative mb-6 select-none hidden lg:block">
             <img 
               src={biodentLogoImg} 
               alt="BioDent Logo Oficial" 
@@ -422,7 +435,7 @@ Información de BioDent:
           </div>
 
           {/* Doctor Signature */}
-          <span className="font-script text-3xl md:text-5xl text-brand-gold tracking-wider mb-1 select-none">
+          <span className="font-script hidden lg:block text-3xl md:text-5xl text-brand-gold tracking-wider mb-1 select-none">
             Dra. Claudia Mabel Tapias
           </span>
           
