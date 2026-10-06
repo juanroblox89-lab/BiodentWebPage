@@ -596,16 +596,16 @@ Reglas:
       {/* Hero Section with Responsive Mobile Doctor Backdrop */}
       <section id="inicio" className="relative min-h-screen flex flex-col justify-center items-start lg:flex-row lg:items-center lg:justify-between lg:gap-10 pt-28 pb-16 px-6 md:px-16 lg:px-24 z-10">
         
-        {/* Doctor background image integration with object-top for mobile responsiveness */}
+        {/* Computador: la doctora es la protagonista del hero, a plena calidad y con más luz */}
         <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden hidden lg:flex justify-end">
-          <div className="w-full h-full relative lg:absolute lg:inset-y-0 lg:left-[26%] lg:right-[26%] lg:w-auto lg:[mask-image:linear-gradient(to_right,transparent,black_16%,black_84%,transparent)]">
-            <img 
-              src={drClaudiaImg} 
-              alt="" 
-              className="w-full h-full object-contain object-bottom scale-[1.04] origin-bottom contrast-[1.04] saturate-[1.05]" 
+          <div className="w-full h-full relative lg:absolute lg:inset-y-0 lg:left-[31%] 2xl:left-[26%] lg:right-[25%] lg:w-auto lg:[mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)]">
+            {/* Halo cálido detrás: la separa del fondo y le da más presencia */}
+            <div className="absolute inset-x-[6%] bottom-0 top-[10%] bg-[radial-gradient(ellipse_at_50%_38%,rgba(232,200,120,0.30),rgba(201,169,97,0.10)_45%,transparent_70%)] blur-xl"></div>
+            <img
+              src={drClaudiaImg}
+              alt="Dra. Claudia Mabel Tapias, odontóloga de BioDent"
+              className="relative w-full h-full object-contain object-bottom scale-[1.05] origin-bottom brightness-[1.13] contrast-[1.06] saturate-[1.08] drop-shadow-[0_0_38px_rgba(232,200,120,0.28)]"
             />
-            {/* Dark gradient overlay to preserve quiet luxury text contrast across all screen sizes */}
-            <div className="absolute inset-0 bg-gradient-to-t md:bg-gradient-to-r from-[#0A0A0A] via-[#0A0A0A]/90 lg:via-[#0A0A0A]/60 to-transparent"></div>
           </div>
         </div>
 
