@@ -1135,6 +1135,34 @@ Reglas:
         </div>
       </section>
 
+      {/* Odontología en Bello: texto y enlaces rastreables a cada tratamiento */}
+      <section id="odontologia-en-bello" aria-labelledby="titulo-odontologia-bello" className="relative z-10 max-w-5xl mx-auto px-6 md:px-12 py-14 border-t border-brand-gold/10">
+        <h2 id="titulo-odontologia-bello" className="font-heading text-xl md:text-2xl font-bold tracking-wider text-brand-white uppercase mb-3">
+          Odontología en Bello, Antioquia
+        </h2>
+        <p className="font-sans text-sm text-brand-secondary font-light leading-relaxed max-w-3xl mb-6">
+          BioDent es el consultorio odontológico de la Dra. Claudia Mabel Tapias en Bello, Antioquia, junto al Éxito del Parque de Bello. Si buscas un dentista en Bello para prótesis dentales, diseño de sonrisa, limpieza y aclaramiento dental o rehabilitación oral, aquí te atendemos con una valoración sin costo.
+        </p>
+        <nav aria-label="Tratamientos odontológicos en Bello">
+          <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-2 font-sans text-sm">
+            {[
+              ['/dentista-en-bello/', 'Dentista en Bello'],
+              ['/protesis-dentales-bello/', 'Prótesis dentales en Bello'],
+              ['/protesis-flexible-bello/', 'Prótesis flexible'],
+              ['/protesis-total-dentadura-bello/', 'Prótesis total (dentadura)'],
+              ['/protesis-acker-bello/', 'Prótesis Acker'],
+              ['/diseno-de-sonrisa-bello/', 'Diseño de sonrisa en resina'],
+              ['/limpieza-y-blanqueamiento-dental-bello/', 'Limpieza y aclaramiento dental'],
+              ['/rehabilitacion-oral-bello/', 'Rehabilitación oral'],
+            ].map(([href, texto]) => (
+              <li key={href}>
+                <a href={href} className="text-brand-gold hover:text-brand-white transition-colors">{texto}</a>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      </section>
+
       {/* Footer */}
       <footer className="relative py-10 px-6 md:px-12 z-10 border-t border-brand-gold/10 bg-[#070707] text-center">
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
