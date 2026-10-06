@@ -597,12 +597,12 @@ Reglas:
       <section id="inicio" className="relative min-h-screen flex flex-col justify-center items-start lg:flex-row lg:items-center lg:justify-between lg:gap-10 pt-28 pb-16 px-6 md:px-16 lg:px-24 z-10">
         
         {/* Doctor background image integration with object-top for mobile responsiveness */}
-        <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden flex justify-end">
-          <div className="w-full h-full relative lg:absolute lg:inset-y-0 lg:left-[32%] lg:right-[28%] lg:w-auto lg:[mask-image:linear-gradient(to_right,transparent,black_16%,black_84%,transparent)]">
+        <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden hidden lg:flex justify-end">
+          <div className="w-full h-full relative lg:absolute lg:inset-y-0 lg:left-[26%] lg:right-[26%] lg:w-auto lg:[mask-image:linear-gradient(to_right,transparent,black_16%,black_84%,transparent)]">
             <img 
               src={drClaudiaImg} 
               alt="" 
-              className="w-full h-full object-cover object-top opacity-55 sm:opacity-65 lg:opacity-95 contrast-[1.04] saturate-[1.05]" 
+              className="w-full h-full object-contain object-bottom scale-[1.04] origin-bottom contrast-[1.04] saturate-[1.05]" 
             />
             {/* Dark gradient overlay to preserve quiet luxury text contrast across all screen sizes */}
             <div className="absolute inset-0 bg-gradient-to-t md:bg-gradient-to-r from-[#0A0A0A] via-[#0A0A0A]/90 lg:via-[#0A0A0A]/60 to-transparent"></div>
@@ -709,6 +709,21 @@ Reglas:
           </div>
 
         </div>
+        {/* Celular: la doctora, a plena luz y debajo de los videos */}
+        <figure className="relative z-10 order-[-9998] mb-8 w-full max-w-[300px] self-center lg:hidden">
+          <div className="overflow-hidden rounded-3xl border border-brand-gold/40 bg-black shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
+            <img
+              src={drClaudiaImg}
+              alt="Dra. Claudia Mabel Tapias, odontóloga de BioDent"
+              className="aspect-[4/5] w-full object-cover object-top contrast-[1.04] saturate-[1.05]"
+            />
+          </div>
+          <figcaption className="mt-3 text-center">
+            <span className="block font-script text-3xl text-brand-gold">Dra. Claudia Mabel Tapias</span>
+            <span className="block font-heading text-[11px] font-semibold uppercase tracking-[0.2em] text-brand-secondary">Odontóloga · 25 años de trayectoria</span>
+          </figcaption>
+        </figure>
+
         {/* Videos reales de la clínica: escenario tipo reel en el hero */}
         <div className="relative z-10 order-first mb-8 self-center w-full max-w-[300px] lg:order-none lg:mb-0 lg:mt-0 lg:max-w-none lg:shrink-0 lg:w-[min(360px,calc((100vh_-_290px)*0.5625))] xl:w-[min(400px,calc((100vh_-_290px)*0.5625))]">
           <HeroReels videos={VIDEOS_CASOS} ctaHref={(v) => getWhatsAppLink(mensajeWeb(`vi el video "${v.titulo}: ${v.detalle}" y quiero agendar una valoración sin costo.`))} />
