@@ -4,7 +4,7 @@ import flexibleProsthesisImg from './assets/flexible_prosthesis.png'
 import totalProsthesisImg from './assets/total_prosthesis.png'
 import ackerProsthesisImg from './assets/acker_prosthesis.png'
 import dentalOfficeImg from './assets/dental_office.png'
-import drClaudiaImg from './assets/dr_claudia.png'
+import drClaudiaImg from './assets/dr_claudia_hd.jpg'
 import HeroReels from './HeroReels.jsx'
 
 // WhatsApp de la clínica de Bello: todos los botones y mensajes salen de aquí.
@@ -354,7 +354,7 @@ function App() {
 Qué haces: respondes dudas generales sobre salud oral y los tratamientos de la clínica, y ayudas a agendar una valoración.
 
 Tratamientos de la clínica: prótesis flexible, prótesis parcial flexible (superior e inferior), prótesis total, prótesis Acker (incluida la semi flexible), diseño de sonrisa en resina, microdiseño, limpieza y aclaramiento dental, y rehabilitación oral.
-Datos reales: la valoración es sin costo. Dirección: Calle 50 #48-34, segundo piso, junto al Éxito del Parque de Bello, Antioquia. Horario: lunes a viernes de 9:00 a. m. a 6:00 p. m. y sábados de 9:00 a. m. a 1:00 p. m. WhatsApp de la clínica: +57 314 809 1585.
+Datos reales: la Dra. Claudia Mabel Tapias tiene 25 años de trayectoria profesional. La valoración es sin costo. Dirección: Calle 50 #48-34, segundo piso, junto al Éxito del Parque de Bello, Antioquia. Horario: lunes a viernes de 9:00 a. m. a 6:00 p. m. y sábados de 9:00 a. m. a 1:00 p. m. WhatsApp de la clínica: +57 314 809 1585.
 
 Reglas:
 1. Solo hablas de dientes, salud oral y la clínica. Si preguntan por otro tema, responde con amabilidad que solo puedes ayudar con la salud oral y la clínica, y ofrece ayuda con eso.
@@ -602,7 +602,7 @@ Reglas:
             <img 
               src={drClaudiaImg} 
               alt="" 
-              className="w-full h-full object-cover object-top opacity-35 sm:opacity-45 lg:opacity-60" 
+              className="w-full h-full object-cover object-top opacity-55 sm:opacity-65 lg:opacity-95 contrast-[1.04] saturate-[1.05]" 
             />
             {/* Dark gradient overlay to preserve quiet luxury text contrast across all screen sizes */}
             <div className="absolute inset-0 bg-gradient-to-t md:bg-gradient-to-r from-[#0A0A0A] via-[#0A0A0A]/90 lg:via-[#0A0A0A]/60 to-transparent"></div>
@@ -818,11 +818,11 @@ Reglas:
             <span className="mb-5 block font-serif-italic text-lg text-brand-gold md:text-xl">Prótesis y rehabilitación oral en Bello</span>
             <div className="mb-6 h-px w-20 bg-brand-gold"></div>
             <div className="space-y-4 font-sans text-sm font-light leading-relaxed text-brand-secondary md:text-base">
-              <p>La Dra. Claudia Mabel Tapias atiende BioDent, su consultorio junto al Parque de Bello. Allí trabaja prótesis flexibles, totales y Acker, diseño de sonrisa en resina, limpieza y aclaramiento dental y rehabilitación oral.</p>
+              <p>La Dra. Claudia Mabel Tapias, con 25 años de trayectoria profesional, atiende BioDent, su consultorio junto al Parque de Bello. Allí trabaja prótesis flexibles, totales y Acker, diseño de sonrisa en resina, limpieza y aclaramiento dental y rehabilitación oral.</p>
               <p>Busca que el resultado se vea natural y se integre con tu rostro. Cada caso se revisa en persona en la valoración, que es sin costo.</p>
             </div>
             <ul className="mt-6 flex flex-wrap gap-2">
-              {['Valoración sin costo', 'Lunes a sábado', 'Junto al Éxito del Parque de Bello'].map((t) => (
+              {['25 años de trayectoria profesional', 'Valoración sin costo', 'Lunes a sábado', 'Junto al Éxito del Parque de Bello'].map((t) => (
                 <li key={t} className="rounded-full border border-brand-gold/30 bg-black/30 px-4 py-2 font-heading text-[11px] font-semibold uppercase tracking-wider text-brand-white">{t}</li>
               ))}
             </ul>

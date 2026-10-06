@@ -43,7 +43,7 @@ const PAGINAS = [
     title: 'Dentista en Bello, Antioquia | BioDent Dra. Claudia',
     desc: 'Odontología en Bello, Antioquia con la Dra. Claudia Mabel Tapias: prótesis, diseño de sonrisa, limpieza y aclaramiento. Valoración sin costo.',
     h1: 'Dentista en Bello, Antioquia',
-    intro: 'BioDent es el consultorio odontológico de la Dra. Claudia Mabel Tapias en Bello, Antioquia. Atendemos a quienes buscan una sonrisa más sana, natural y cómoda: prótesis dentales, diseño de sonrisa, limpieza y aclaramiento dental y rehabilitación oral.',
+    intro: 'BioDent es el consultorio odontológico de la Dra. Claudia Mabel Tapias, con 25 años de trayectoria profesional, en Bello, Antioquia. Atendemos a quienes buscan una sonrisa más sana, natural y cómoda: prótesis dentales, diseño de sonrisa, limpieza y aclaramiento dental y rehabilitación oral.',
     secciones: [
       ['Odontología en Bello: lo que hacemos', [
         'Si estás buscando un dentista en Bello, en BioDent encuentras atención odontológica enfocada en la estética y la función de tu sonrisa. Estos son nuestros tratamientos:',
@@ -58,6 +58,7 @@ const PAGINAS = [
       ]],
     ],
     faq: [FAQ_COMUN.valoracion, FAQ_COMUN.donde, FAQ_COMUN.horario,
+      ['¿Quién atiende en BioDent?', 'La Dra. Claudia Mabel Tapias, odontóloga con 25 años de trayectoria profesional.'],
       ['¿Qué tratamientos ofrece BioDent?', 'Prótesis flexible, prótesis parcial flexible, prótesis total, prótesis Acker (incluida la semi flexible), diseño de sonrisa en resina, microdiseño, limpieza y aclaramiento dental y rehabilitación oral.'],
       ['¿Cómo agendo una cita?', 'Escribiendo por WhatsApp al +57 314 809 1585. Cuéntanos qué tratamiento te interesa y agendamos tu valoración.'],
     ],
@@ -191,7 +192,7 @@ const PAGINAS = [
     title: 'Rehabilitación oral en Bello, Antioquia | BioDent',
     desc: 'Rehabilitación oral en Bello, Antioquia: estética natural y atención profesional para recuperar tu sonrisa. Valoración sin costo en BioDent.',
     h1: 'Rehabilitación oral en Bello, Antioquia',
-    intro: 'La rehabilitación oral busca devolverle función y estética a tu boca. En BioDent la Dra. Claudia Mabel Tapias planea contigo el tratamiento que corresponde a tu caso, con estética natural y atención profesional.',
+    intro: 'La rehabilitación oral busca devolverle función y estética a tu boca. En BioDent la Dra. Claudia Mabel Tapias, con 25 años de trayectoria profesional, planea contigo el tratamiento que corresponde a tu caso, con estética natural y atención profesional.',
     secciones: [
       ['Cómo empezar', [
         'El primer paso es la valoración sin costo: revisamos tu caso, resolvemos tus dudas y te explicamos las opciones, que pueden incluir prótesis, diseño de sonrisa en resina u otros tratamientos de la clínica.',
