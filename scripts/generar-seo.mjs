@@ -69,6 +69,7 @@ const PAGINAS = [
   {
     slug: 'protesis-dentales-bello',
     nombreCorto: 'Prótesis dentales en Bello',
+    videos: ['1090847400357143', '4093938577402828', '4476906885914705'],
     title: 'Prótesis dentales en Bello, Antioquia | BioDent',
     desc: 'Prótesis dentales en Bello: flexibles, parciales, totales y Acker, hechas a tu medida con la Dra. Claudia Mabel Tapias. Valoración sin costo.',
     h1: 'Prótesis dentales en Bello, Antioquia',
@@ -109,11 +110,12 @@ const PAGINAS = [
     ],
     mensaje: 'quiero agendar una valoración sin costo para una prótesis flexible.',
     servicio: 'Prótesis flexible',
-    video: 'parcial-flexible',
+    videos: ['1090847400357143', '2124245435197598'],
   },
   {
     slug: 'protesis-total-dentadura-bello',
     nombreCorto: 'Prótesis total (dentadura)',
+    videos: ['4476906885914705'],
     title: 'Prótesis total o dentadura en Bello | BioDent',
     desc: 'Prótesis total (dentadura) en Bello, Antioquia: reemplaza todos los dientes y devuelve función, estética y confianza. Valoración sin costo.',
     h1: 'Prótesis total (dentadura) en Bello, Antioquia',
@@ -145,7 +147,7 @@ const PAGINAS = [
     ],
     mensaje: 'quiero agendar una valoración sin costo para una prótesis Acker.',
     servicio: 'Prótesis Acker',
-    video: 'acker-semiflexible',
+    videos: ['4093938577402828', '1605121888020350', '1062673213405352'],
   },
   {
     slug: 'diseno-de-sonrisa-bello',
@@ -165,7 +167,7 @@ const PAGINAS = [
     ],
     mensaje: 'quiero agendar una valoración sin costo para un diseño de sonrisa en resina.',
     servicio: 'Diseño de sonrisa en resina',
-    video: 'diseno-resina',
+    videos: ['1395917162694530', '1397754392509318', '1736946967419303'],
   },
   {
     slug: 'limpieza-y-blanqueamiento-dental-bello',
@@ -184,7 +186,7 @@ const PAGINAS = [
     ],
     mensaje: 'quiero agendar una valoración sin costo para una limpieza y aclaramiento dental.',
     servicio: 'Limpieza y aclaramiento dental',
-    video: 'antes-despues',
+    videos: ['1985836905369888', '1710454407265580', '1043173052082339'],
   },
   {
     slug: 'rehabilitacion-oral-bello',
@@ -201,7 +203,7 @@ const PAGINAS = [
     faq: [FAQ_COMUN.costo, FAQ_COMUN.valoracion, FAQ_COMUN.tiempo, FAQ_COMUN.donde],
     mensaje: 'quiero agendar una valoración sin costo para una rehabilitación oral.',
     servicio: 'Rehabilitación oral',
-    video: 'rehabilitacion-oral',
+    videos: ['4476906885914705'],
   },
 ];
 
@@ -265,6 +267,7 @@ h1{font-size:clamp(27px,6vw,42px);line-height:1.15;margin:0 0 14px;letter-spacin
 .play span{width:72px;height:72px;border-radius:50%;background:var(--oro);display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 8px rgba(201,169,97,.25),0 10px 30px rgba(0,0,0,.5)}
 .play svg{width:34px;height:34px;fill:#0a0a0a;margin-left:4px}
 .play:hover span{background:var(--oro2)}
+.tira{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:4px}.tira .video{flex:0 0 46vw;max-width:200px;width:auto;margin:0;scroll-snap-align:start}
 .vtxt{position:absolute;left:0;right:0;bottom:0;background:rgba(0,0,0,.72);text-align:center;font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;padding:8px;color:var(--txt)}
 h2{font-size:22px;line-height:1.25;margin:40px 0 12px;color:var(--oro)}
 p{margin:0 0 12px}
@@ -337,6 +340,7 @@ function render(p) {
   const etiquetaVideo = p.video === 'como-llegar' ? 'Mira cómo llegar' : 'Mira un caso real';
   const alVideo = p.video === 'como-llegar' ? 'Video: recorrido a pie hasta el consultorio de BioDent' : 'Video de un caso real de la clínica';
   const onclick = `var b=this.parentNode;b.innerHTML='<video controls autoplay playsinline src=&quot;/videos/${p.video}.mp4&quot; poster=&quot;/videos/posters/${p.video}.jpg&quot; aria-label=&quot;${alVideo}&quot;></video>'`;
+  const videosHtml = (p.videos || []).length ? `<h2>Casos reales de la clínica</h2><div class="tira">${p.videos.map((id) => `<div class="video"><img src="/videos/posters/g/${id}.jpg" alt="" width="540" height="960" loading="lazy"><button type="button" class="play" aria-label="Reproducir video: ${esc(p.nombreCorto)}" onclick="var b=this.parentNode;document.querySelectorAll('video').forEach(function(v){v.pause()});b.innerHTML='<video controls autoplay playsinline src=&quot;/videos/g/${id}.mp4&quot; poster=&quot;/videos/posters/g/${id}.jpg&quot; aria-label=&quot;Video de un caso real de la clínica&quot;></video>'"><span>${PLAY}</span></button></div>`).join('')}</div>` : '';
   const video = p.video ? `<div class="video"><img src="/videos/posters/${p.video}.jpg" alt="" width="540" height="960" loading="eager"><button type="button" class="play" aria-label="Reproducir video: ${esc(p.nombreCorto)}" onclick="${onclick}"><span>${PLAY}</span></button><div class="vtxt">${etiquetaVideo}</div></div>` : '';
   const lista = BENEFICIOS[p.slug] || BENEFICIOS_BASE;
   const beneficios = `<ul class="beneficios">${lista.map(([k, t]) => `<li>${svgIco(k)}<span>${esc(t)}</span></li>`).join('')}</ul>`;
@@ -384,6 +388,7 @@ function render(p) {
 </div>
 ${video}
 </section>
+${videosHtml}
 <h2>Lo que debes saber</h2>
 ${beneficios}
 ${secciones}

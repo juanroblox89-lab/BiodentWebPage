@@ -97,21 +97,40 @@ const PROTESIS = [
   },
 ];
 
+const TIRAS_PROTESIS = {
+  'Prótesis flexible': { grupo: 'flexible', titulo: 'Prótesis flexible en casos reales', subtitulo: 'Trabajos hechos en la clínica. Desliza y toca para ver.' },
+  'Prótesis total': { grupo: 'total', titulo: 'Rehabilitación con prótesis', subtitulo: 'Un caso real de la clínica. Toca para verlo.' },
+  'Prótesis Acker': { grupo: 'acker', titulo: 'Acker flexible en casos reales', subtitulo: 'Desliza para ver más casos de la clínica.' },
+};
 const CASOS_DESTACADOS = ['testimonio', 'antes-despues-carillas', 'antes-despues', 'diseno-sonrisa'].map((id) => VIDEOS_CASOS.find((v) => v.id === id));
 
+// Solo un video suena a la vez: al activar uno se avisa a los demás para que vuelvan a su carátula.
+const EVENTO_VIDEO = 'biodent:video-activo';
+function useVideoUnico(token, activo, setActivo) {
+  useEffect(() => {
+    if (activo) window.dispatchEvent(new CustomEvent(EVENTO_VIDEO, { detail: token }));
+  }, [activo, token]);
+  useEffect(() => {
+    const alOtro = (e) => { if (e.detail !== token) setActivo(false); };
+    window.addEventListener(EVENTO_VIDEO, alOtro);
+    return () => window.removeEventListener(EVENTO_VIDEO, alOtro);
+  }, [token, setActivo]);
+}
 // Tarjeta de video: muestra la carátula y solo pide el MP4 al tocar.
-function VideoTarjeta({ id, titulo, detalle }) {
+function VideoTarjeta({ id, titulo, detalle = '' }) {
   const [activo, setActivo] = useState(false);
+  const token = useRef(Symbol('video')).current;
+  useVideoUnico(token, activo, setActivo);
   return (
     <figure className="m-0">
       <div className="relative aspect-[9/16] overflow-hidden rounded-2xl border border-brand-gold/40 bg-black">
         {activo ? (
-          <video className="h-full w-full object-cover" src={`/videos/${id}.mp4`} poster={`/videos/posters/${id}.jpg`} controls autoPlay playsInline preload="none" aria-label={`Video: ${titulo}. ${detalle}`} />
+          <video className="h-full w-full object-cover" src={`/videos/${id}.mp4`} poster={`/videos/posters/${id}.jpg`} controls autoPlay playsInline preload="none" aria-label={`Video: ${titulo}${detalle ? `. ${detalle}` : ''}`} />
         ) : (
           <button
             type="button"
             onClick={() => setActivo(true)}
-            aria-label={`Reproducir video: ${titulo}. ${detalle}`}
+            aria-label={`Reproducir video: ${titulo}${detalle ? `. ${detalle}` : ''}`}
             className="group absolute inset-0 block h-full w-full cursor-pointer focus-visible:outline focus-visible:outline-4 focus-visible:-outline-offset-4 focus-visible:outline-brand-glow"
           >
             <img src={`/videos/posters/${id}.jpg`} alt="" loading="lazy" className="h-full w-full object-cover" />
@@ -124,9 +143,53 @@ function VideoTarjeta({ id, titulo, detalle }) {
       </div>
       <figcaption className="mt-2 text-left">
         <span className="block font-heading text-xs font-bold uppercase tracking-wider text-brand-white">{titulo}</span>
-        <span className="block font-sans text-xs leading-snug text-[#B9B3A5]">{detalle}</span>
+        {detalle && <span className="block font-sans text-xs leading-snug text-[#B9B3A5]">{detalle}</span>}
       </figcaption>
     </figure>
+  );
+}
+
+// Galería de la clínica (public/videos/g). Los títulos son los de la página de Facebook; cada MP4 se pide solo al tocar play.
+const GALERIA = [
+  { id: '1090847400357143', titulo: 'Prótesis parcial removible superior', grupo: 'flexible' },
+  { id: '2124245435197598', titulo: 'Prótesis flexible superior y carillas en resina', grupo: 'flexible' },
+  { id: '4476906885914705', titulo: 'Rehabilitación con prótesis en alta estética', grupo: 'total' },
+  { id: '4093938577402828', titulo: 'Acker flexible superior · caso 1', grupo: 'acker' },
+  { id: '1571426944245720', titulo: 'Acker flexible superior · caso 2', grupo: 'acker' },
+  { id: '1605121888020350', titulo: 'Acker flexible · caso 1', grupo: 'acker' },
+  { id: '4660831370864697', titulo: 'Acker flexible · caso 2', grupo: 'acker' },
+  { id: '1062673213405352', titulo: 'Acker flexible · caso 3', grupo: 'acker' },
+  { id: '4402731709991864', titulo: 'Acker flexible · caso 4', grupo: 'acker' },
+  { id: '1395917162694530', titulo: 'Diseño de sonrisa en resina · caso 1', grupo: 'diseno' },
+  { id: '1397754392509318', titulo: 'Diseño de sonrisa en resina · caso 2', grupo: 'diseno' },
+  { id: '1736946967419303', titulo: 'Diseño de sonrisa en resina · caso 3', grupo: 'diseno' },
+  { id: '1985836905369888', titulo: 'Aclaramiento dental y armonización de bordes en resina', grupo: 'aclaramiento' },
+  { id: '1710454407265580', titulo: 'Segunda sesión de aclaramiento dental · caso 1', grupo: 'aclaramiento' },
+  { id: '2153799578852662', titulo: 'Segunda sesión de aclaramiento dental · caso 2', grupo: 'aclaramiento' },
+  { id: '886925041017833', titulo: 'Segunda sesión de aclaramiento dental · caso 3', grupo: 'aclaramiento' },
+  { id: '1043173052082339', titulo: 'Cuidados de un aclaramiento dental', grupo: 'aclaramiento' },
+  { id: '1407839157521670', titulo: 'Microdiseño · caso 1', grupo: 'microdiseno' },
+  { id: '1352741603304004', titulo: 'Microdiseño · caso 2', grupo: 'microdiseno' },
+  { id: '4539025719676088', titulo: 'Caso real', grupo: 'casos' },
+];
+const galeriaDe = (grupo) => GALERIA.filter((v) => v.grupo === grupo).map((v) => ({ ...v, id: `g/${v.id}` }));
+
+// Tira horizontal deslizable de videos verticales, para repartir entre las secciones.
+function TiraVideos({ titulo, subtitulo, videos }) {
+  return (
+    <div className="py-10 md:py-14">
+      <div className="mb-5 text-center md:mb-6">
+        <span className="block font-heading text-xs font-bold uppercase tracking-[0.25em] text-brand-gold">{titulo}</span>
+        <p className="mx-auto mt-2 max-w-xl font-sans text-sm font-light text-brand-secondary md:text-base">{subtitulo}</p>
+      </div>
+      <ul className="scroll-limpio -mx-5 flex scroll-px-5 sm:scroll-px-8 md:scroll-px-12 snap-x snap-mandatory gap-3 overflow-x-auto px-5 pb-1 sm:-mx-8 sm:px-8 md:-mx-12 md:px-12" aria-label={titulo}>
+        {videos.map((v) => (
+          <li key={v.id} className="w-[46vw] max-w-[220px] shrink-0 snap-start first:ml-auto last:mr-auto">
+            <VideoTarjeta {...v} />
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 }
 const DIRECCION = 'Calle 50 #48-34, segundo piso, junto al Éxito del Parque de Bello, Antioquia';
@@ -154,6 +217,8 @@ const WA_PATH = 'M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5
 // Cómo llegar: video vertical del recorrido. El MP4 no se pide hasta que la persona toca el play.
 function ComoLlegar() {
   const [reproduciendo, setReproduciendo] = useState(false);
+  const token = useRef(Symbol('video')).current;
+  useVideoUnico(token, reproduciendo, setReproduciendo);
   return (
     <section id="como-llegar" aria-labelledby="titulo-como-llegar" className="relative z-10 scroll-mt-24 px-4 py-14 sm:px-6 md:py-20">
       <div className="relative mx-auto max-w-6xl overflow-hidden rounded-3xl border border-brand-gold/50 bg-[#100E09] shadow-[0_0_60px_rgba(201,169,97,0.14)]">
@@ -763,7 +828,8 @@ Reglas:
 
         <div className="space-y-6 md:space-y-8">
           {PROTESIS.map((p, i) => (
-            <article key={p.nombre} className="grid grid-cols-1 overflow-hidden rounded-3xl border border-brand-gold/25 bg-[#0F0E0B] lg:grid-cols-2">
+            <React.Fragment key={p.nombre}>
+            <article className="grid grid-cols-1 overflow-hidden rounded-3xl border border-brand-gold/25 bg-[#0F0E0B] lg:grid-cols-2">
               <div className={`relative aspect-[16/10] lg:aspect-auto lg:min-h-[360px] ${i % 2 === 1 ? 'lg:order-2' : ''}`}>
                 <img src={p.img} alt={p.alt} loading="lazy" className="absolute inset-0 h-full w-full object-cover" />
               </div>
@@ -789,6 +855,8 @@ Reglas:
                 </a>
               </div>
             </article>
+            {TIRAS_PROTESIS[p.nombre] && <TiraVideos {...TIRAS_PROTESIS[p.nombre]} videos={galeriaDe(TIRAS_PROTESIS[p.nombre].grupo)} />}
+            </React.Fragment>
           ))}
         </div>
 
@@ -820,6 +888,9 @@ Reglas:
             ))}
           </div>
         </div>
+        <TiraVideos titulo="Diseño de sonrisa en resina" subtitulo="Casos reales de diseño de sonrisa. Desliza y toca para ver." videos={galeriaDe('diseno')} />
+        <TiraVideos titulo="Aclaramiento dental" subtitulo="Sesiones y cuidados del aclaramiento en la clínica." videos={galeriaDe('aclaramiento')} />
+        <TiraVideos titulo="Microdiseño" subtitulo="Detalles de microdiseño hechos en la clínica." videos={galeriaDe('microdiseno')} />
       </section>
 
       {/* La doctora */}
@@ -864,15 +935,21 @@ Reglas:
           <p className="mx-auto mt-4 max-w-xl font-sans text-sm font-light leading-relaxed text-brand-secondary md:text-base">Videos de trabajos hechos en la clínica. Toca para verlos.</p>
           <div className="mx-auto mt-5 h-px w-20 bg-brand-gold"></div>
         </div>
-        <div className="mx-auto grid max-w-4xl grid-cols-2 gap-3 sm:gap-5 md:grid-cols-4">
+        <div className="mx-auto grid max-w-5xl grid-cols-2 gap-3 sm:gap-5 md:grid-cols-5">
           {CASOS_DESTACADOS.map((v) => (
+            <VideoTarjeta key={v.id} {...v} />
+          ))}
+          {galeriaDe('casos').map((v) => (
             <VideoTarjeta key={v.id} {...v} />
           ))}
         </div>
         <p className="mx-auto mt-8 max-w-xl text-center font-sans text-sm font-light text-brand-secondary">
           El primero es el testimonio de una paciente. Cada caso es distinto: la Dra. Claudia revisa el tuyo en la valoración sin costo.
         </p>
-      </section>
+        <div className="mt-6 flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:items-center">
+          <a href="https://www.facebook.com/people/Dra-Claudia-Mabel-Tapias/61587872871889/?sk=reels_tab" target="_blank" rel="noopener noreferrer" className="inline-flex min-h-[44px] items-center justify-center rounded-full border border-brand-gold/50 px-6 py-2.5 font-heading text-xs font-bold uppercase tracking-wider text-brand-gold transition-colors hover:bg-brand-gold/10">Ver más videos en Facebook</a>
+          <a href="https://www.instagram.com/biodent_parquedebello/" target="_blank" rel="noopener noreferrer" className="inline-flex min-h-[44px] items-center justify-center rounded-full border border-brand-gold/50 px-6 py-2.5 font-heading text-xs font-bold uppercase tracking-wider text-brand-gold transition-colors hover:bg-brand-gold/10">Ver más en Instagram</a>
+        </div>      </section>
 
       {/* Appointment and Location Section */}
       <section id="contacto" className="relative z-10 mx-auto max-w-5xl px-5 py-16 sm:px-8 md:px-12 md:py-24">
