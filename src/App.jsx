@@ -598,11 +598,11 @@ Reglas:
         
         {/* Computador: la doctora es la protagonista del hero, a plena calidad y con más luz */}
         <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden hidden lg:flex justify-end">
-          <div className="relative flex items-end justify-center lg:absolute lg:inset-y-0 lg:left-[32%] 2xl:left-[26%] lg:right-[25%]">
+          <div className="relative flex items-end justify-center lg:absolute lg:inset-y-0 lg:left-[35%] 2xl:left-[28%] lg:right-[26%]">
             {/* Halo cálido y suave detrás del marco */}
             <div className="absolute inset-x-[4%] bottom-0 top-[6%] bg-[radial-gradient(ellipse_at_50%_35%,rgba(232,200,120,0.16),transparent_68%)] blur-2xl"></div>
             {/* Marco en arco con contorno dorado */}
-            <div className="relative h-[94%] max-w-full aspect-[4/5] overflow-hidden rounded-t-[999px] border-x border-t border-brand-gold/65 bg-black shadow-[0_0_46px_rgba(201,169,97,0.20)]">
+            <div className="relative h-[90%] max-w-full aspect-[4/5] overflow-hidden rounded-t-[999px] border-x border-t border-brand-gold/65 bg-black shadow-[0_0_46px_rgba(201,169,97,0.20)]">
               <img
                 src={drClaudiaImg}
                 alt="Dra. Claudia Mabel Tapias, odontóloga de BioDent"
@@ -637,12 +637,12 @@ Reglas:
           </div>
 
           {/* Doctor Signature */}
-          <span className="font-script hidden lg:block text-3xl md:text-5xl text-brand-gold tracking-wider mb-1 select-none">
+          <span className="font-script hidden lg:block text-3xl md:text-4xl 2xl:text-5xl text-brand-gold tracking-wider mb-1 select-none">
             Dra. Claudia Mabel Tapias
           </span>
           
           {/* Tagline */}
-          <h1 className="font-heading text-3xl md:text-5xl lg:text-6xl font-bold tracking-wider text-brand-white uppercase leading-tight mb-6">
+          <h1 className="font-heading text-3xl md:text-5xl lg:text-5xl 2xl:text-6xl font-bold tracking-wider text-brand-white uppercase leading-tight mb-6">
             <span className="block font-heading text-xs tracking-[0.3em] font-medium text-brand-secondary uppercase mb-4">— BioDent Bello —</span>
             Tu sonrisa,<br />
             <span className="text-brand-gold">nuestra especialidad</span>
